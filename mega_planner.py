@@ -6,10 +6,10 @@ next to this script.
 
 Usage::
 
-    python mega_planner.py --feature-desc "Add dark mode support"
+    python mega_planner.py "Add dark mode support"
     python mega_planner.py --from-issue 42
-    python mega_planner.py --refine-issue 42 --feature-desc "focus on CSS variables"
-    python mega_planner.py --resolve-issue 42 --selections "1B,2A"
+    python mega_planner.py --refine-issue 42 "focus on CSS variables"
+    python mega_planner.py -r 42 "1B,2A"
 """
 
 from __future__ import annotations

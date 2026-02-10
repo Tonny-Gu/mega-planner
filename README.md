@@ -13,10 +13,10 @@ Requires `agentize` to be installed in the environment.
 ## Usage
 
 ```bash
-mega-planner --feature-desc "Your feature description"
+mega-planner "Your feature description"
 mega-planner --from-issue 42
-mega-planner --refine-issue 42 --feature-desc "focus on X"
-mega-planner --resolve-issue 42 --selections "1B,2A"
+mega-planner --refine-issue 42 "focus on X"
+mega-planner -r 42 "1B,2A"
 ```
 
 ## Pipeline Stages
