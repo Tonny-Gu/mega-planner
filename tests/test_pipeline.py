@@ -9,15 +9,14 @@ from typing import Callable
 
 import pytest
 
-from mega_planner.pipeline import (
+from mega_planner import (
     AGENT_PROMPTS,
     DEFAULT_BACKENDS,
     STAGE_TOOLS,
     STAGE_PERMISSION_MODE,
+    main,
     run_mega_pipeline,
     extract_feature_name,
-)
-from mega_planner.cli import (
     _resolve_commit_hash,
     _append_plan_footer,
     _strip_plan_footer,
@@ -403,3 +402,59 @@ class TestResolveCommitHash:
         # Should return a hex string or "unknown"
         assert isinstance(result, str)
         assert len(result) > 0
+
+
+# ============================================================
+# Test CLI Argument Parsing
+# ============================================================
+
+
+class TestCLIArgumentParsing:
+    """Test CLI argument parsing after positional-args refactor."""
+
+    def test_default_mode_positional(self, tmp_output_dir, stub_runner, monkeypatch):
+        """Positional arg becomes feature description in default mode."""
+        monkeypatch.setattr("mega_planner.run_mega_pipeline", lambda *a, **kw: {})
+        monkeypatch.setattr("mega_planner.gh_utils.issue_create", lambda *a, **kw: (None, None))
+        result = main(["Add", "dark", "mode", "--output-dir", str(tmp_output_dir), "--issue-mode", "false"])
+        assert result == 0
+
+    def test_default_mode_no_args_fails(self):
+        """No positional arg in default mode exits with error."""
+        result = main(["--issue-mode", "false"])
+        assert result != 0
+
+    def test_resolve_short_flag(self, tmp_output_dir, stub_runner, monkeypatch):
+        """-r is shorthand for --resolve."""
+        captured = {}
+
+        def fake_pipeline(desc, **kw):
+            captured["desc"] = desc
+            return {}
+
+        monkeypatch.setattr("mega_planner.run_mega_pipeline", fake_pipeline)
+        monkeypatch.setattr("mega_planner.gh_utils.issue_body", lambda n: "issue body")
+        for stage in ["bold", "paranoia", "critique", "proposal-reducer", "code-reducer"]:
+            (tmp_output_dir / f"issue-42-{stage}-output.md").write_text("stub")
+        result = main(["-r", "42", "1B,2A", "--output-dir", str(tmp_output_dir)])
+        assert result == 0
+
+    def test_refine_positional_focus(self, tmp_output_dir, stub_runner, monkeypatch):
+        """Refine mode uses positional arg as refinement focus."""
+        captured = {}
+
+        def fake_pipeline(desc, **kw):
+            captured["desc"] = desc
+            return {}
+
+        monkeypatch.setattr("mega_planner.run_mega_pipeline", fake_pipeline)
+        monkeypatch.setattr("mega_planner.gh_utils.issue_body", lambda n: "# Plan\nbody")
+        monkeypatch.setattr("mega_planner.gh_utils.issue_url", lambda n: "http://example.com")
+        result = main(["--refine-issue", "42", "focus", "on", "X", "--output-dir", str(tmp_output_dir)])
+        assert result == 0
+        assert "focus on X" in captured["desc"]
+
+    def test_verbose_short_flag(self):
+        """Verify -v is accepted as --verbose alias."""
+        result = main(["-v", "--issue-mode", "false"])
+        assert result == 1  # missing feature desc, not argparse error
