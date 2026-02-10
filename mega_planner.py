@@ -7,9 +7,9 @@ next to this script.
 Usage::
 
     python mega_planner.py "Add dark mode support"
-    python mega_planner.py --from-issue 42
-    python mega_planner.py --refine-issue 42 "focus on CSS variables"
+    python mega_planner.py -f 42
     python mega_planner.py -r 42 "1B,2A"
+    python mega_planner.py --local "Plan without GitHub issues"
 """
 
 from __future__ import annotations
@@ -355,7 +355,7 @@ def run_mega_pipeline(
         critique_output, proposal_reducer_output, code_reducer_output,
     )
 
-    # Append resolve/refine context if provided
+    # Append resolve context if provided
     if consensus_path and consensus_path.exists():
         prev_plan = consensus_path.read_text()
         debate_report += (
@@ -396,7 +396,6 @@ def run_mega_pipeline(
 # ============================================================
 
 _PLAN_HEADER_RE = re.compile(r"^#\s*(Implementation|Consensus) Plan:\s*(.+)$")
-_PLAN_HEADER_HINT_RE = re.compile(r"(Implementation Plan:|Consensus Plan:)", re.IGNORECASE)
 _PLAN_FOOTER_RE = re.compile(r"^Plan based on commit (?:[0-9a-f]+|unknown)$")
 
 
@@ -493,24 +492,21 @@ def _apply_issue_tag(plan_title: str, issue_number: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry point. Positional args serve as feature desc, selections, or refinement focus."""
+    """CLI entry point. Positional args serve as feature desc or selections."""
     parser = argparse.ArgumentParser(description="Mega-planner 7-stage pipeline")
-    parser.add_argument("words", nargs="*", default=[], help="Feature description, selections, or refinement focus")
-    parser.add_argument("--from-issue", default="", help="Plan from existing issue number")
-    parser.add_argument("--refine-issue", default="", help="Refine existing plan issue")
+    parser.add_argument("words", nargs="*", default=[], help="Feature description or selections")
+    parser.add_argument("-f", "--from", dest="from_issue", default="", help="Plan from existing issue number")
     parser.add_argument("-r", "--resolve", default="", metavar="ISSUE", help="Resolve disagreements in issue")
     parser.add_argument("--output-dir", default=".tmp")
     parser.add_argument("--prefix", default=None)
-    parser.add_argument("-v", "--verbose", action="store_true")
-    parser.add_argument("--skip-consensus", action="store_true")
-    parser.add_argument("--issue-mode", default="true", choices=["true", "false"])
+    parser.add_argument("--local", action="store_true", help="Disable GitHub issue creation")
     args = parser.parse_args(argv)
 
     positional = " ".join(args.words)
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    issue_mode = args.issue_mode == "true"
+    issue_mode = not args.local
 
     issue_number: str | None = None
     issue_url: str | None = None
@@ -522,10 +518,6 @@ def main(argv: list[str] | None = None) -> int:
 
     def _log(msg: str) -> None:
         print(msg, file=sys.stderr)
-
-    def _log_verbose(msg: str) -> None:
-        if args.verbose:
-            _log(msg)
 
     # --- Resolve mode ---
     if args.resolve:
@@ -553,33 +545,6 @@ def main(argv: list[str] | None = None) -> int:
 
         feature_desc = gh_utils.issue_body(issue_number)
         feature_desc = _strip_plan_footer(feature_desc)
-
-    # --- Refine mode ---
-    elif args.refine_issue:
-        issue_number = args.refine_issue
-        issue_url = gh_utils.issue_url(issue_number)
-        prefix = f"issue-{issue_number}"
-        issue_body = gh_utils.issue_body(issue_number)
-        issue_body = _strip_plan_footer(issue_body)
-        if not _PLAN_HEADER_HINT_RE.search(issue_body):
-            _log(
-                f"Warning: Issue #{issue_number} does not look like a plan "
-                "(missing Implementation/Consensus Plan headers)"
-            )
-        feature_desc = issue_body
-        if positional:
-            feature_desc = f"{feature_desc}\n\nRefinement focus:\n{positional}"
-        history_path = output_dir / f"{prefix}-history.md"
-        if not history_path.exists():
-            history_path.write_text(
-                "# Selection & Refine History\n\n"
-                "| Timestamp | Type | Content |\n"
-                "|-----------|------|---------|\n"
-            )
-        ts = datetime.now().strftime("%Y-%m-%d %H:%M")
-        summary = (positional or "general refinement")[:80].replace("\n", " ")
-        with history_path.open("a") as f:
-            f.write(f"| {ts} | refine | {summary} |\n")
 
     # --- From-issue mode ---
     elif args.from_issue:
@@ -611,21 +576,16 @@ def main(argv: list[str] | None = None) -> int:
 
     _log("Starting mega-planner 7-stage debate pipeline...")
     _log(f"Feature: {extract_feature_name(feature_desc)}")
-    _log_verbose(f"Artifacts prefix: {prefix}")
+    _log(f"Artifacts prefix: {prefix}")
 
-    try:
-        results = run_mega_pipeline(
-            feature_desc,
-            output_dir=output_dir,
-            prefix=prefix,
-            skip_consensus=args.skip_consensus,
-            report_paths=report_paths,
-            consensus_path=consensus_path,
-            history_path=history_path,
-        )
-    except (FileNotFoundError, RuntimeError, subprocess.TimeoutExpired) as exc:
-        _log(f"Error: {exc}")
-        return 2
+    results = run_mega_pipeline(
+        feature_desc,
+        output_dir=output_dir,
+        prefix=prefix,
+        report_paths=report_paths,
+        consensus_path=consensus_path,
+        history_path=history_path,
+    )
 
     consensus_result = results.get("consensus")
     if consensus_result:
