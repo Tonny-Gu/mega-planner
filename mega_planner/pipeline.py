@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import importlib.resources
+import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
 from agentize.workflow.api import run_acw
-from agentize.workflow.api import prompt as prompt_utils
 from agentize.workflow.api.session import Session, StageResult
+
+_FRONTMATTER_RE = re.compile(r"^---\s*\n.*?\n---\s*\n", re.DOTALL)
 
 # ============================================================
 # Constants
@@ -57,11 +59,16 @@ STAGE_PERMISSION_MODE = {
 # ============================================================
 
 
+def _strip_frontmatter(content: str) -> str:
+    """Remove YAML frontmatter from markdown content."""
+    return _FRONTMATTER_RE.sub("", content, count=1)
+
+
 def _read_agent_prompt(stage: str) -> str:
     """Read an agent prompt from package data."""
     filename = AGENT_PROMPTS[stage]
     raw = (_PROMPTS / filename).read_text(encoding="utf-8")
-    return prompt_utils._strip_yaml_frontmatter(raw)
+    return _strip_frontmatter(raw)
 
 
 def _render_stage_prompt(
@@ -169,7 +176,7 @@ def _render_consensus_prompt(
 ) -> str:
     """Render the external-synthesize prompt template and write to dest_path."""
     raw = (_PROMPTS / "external-synthesize-prompt.md").read_text(encoding="utf-8")
-    template = prompt_utils._strip_yaml_frontmatter(raw)
+    template = _strip_frontmatter(raw)
     rendered = (
         template.replace("{{FEATURE_NAME}}", feature_name)
         .replace("{{FEATURE_DESCRIPTION}}", feature_desc)
@@ -179,7 +186,7 @@ def _render_consensus_prompt(
     return rendered
 
 
-def _extract_feature_name(feature_desc: str, max_len: int = 80) -> str:
+def extract_feature_name(feature_desc: str, max_len: int = 80) -> str:
     """Extract a short feature name from description."""
     first_line = feature_desc.strip().split("\n")[0]
     normalized = " ".join(first_line.split())
@@ -239,6 +246,10 @@ def run_mega_pipeline(
 
     # --- Resolve mode: skip debate, load existing reports ---
     if report_paths is not None:
+        _required = {"bold", "paranoia", "critique", "proposal-reducer", "code-reducer"}
+        missing = _required - report_paths.keys()
+        if missing:
+            raise ValueError(f"report_paths missing required stages: {missing}")
         bold_output = report_paths["bold"].read_text()
         paranoia_output = report_paths["paranoia"].read_text()
         critique_output = report_paths["critique"].read_text()
@@ -321,7 +332,7 @@ def run_mega_pipeline(
         return results
 
     # --- Tier 4: Consensus via external AI ---
-    feature_name = _extract_feature_name(feature_desc)
+    feature_name = extract_feature_name(feature_desc)
     debate_report = _build_debate_report(
         feature_name,
         bold_output, paranoia_output,

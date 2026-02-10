@@ -15,7 +15,7 @@ from mega_planner.pipeline import (
     STAGE_TOOLS,
     STAGE_PERMISSION_MODE,
     run_mega_pipeline,
-    _extract_feature_name,
+    extract_feature_name,
 )
 from mega_planner.cli import (
     _resolve_commit_hash,
@@ -296,16 +296,16 @@ class TestExtractFeatureName:
     """Test feature name extraction."""
 
     def test_short_description(self):
-        assert _extract_feature_name("Add dark mode") == "Add dark mode"
+        assert extract_feature_name("Add dark mode") == "Add dark mode"
 
     def test_long_description_truncated(self):
         long_desc = "A" * 100
-        result = _extract_feature_name(long_desc, max_len=80)
+        result = extract_feature_name(long_desc, max_len=80)
         assert len(result) <= 84  # 80 + "..."
         assert result.endswith("...")
 
     def test_multiline_uses_first_line(self):
-        result = _extract_feature_name("First line\nSecond line\nThird")
+        result = extract_feature_name("First line\nSecond line\nThird")
         assert result == "First line"
 
 

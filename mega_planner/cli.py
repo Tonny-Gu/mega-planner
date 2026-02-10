@@ -13,7 +13,7 @@ from agentize.workflow.api import gh as gh_utils
 
 from mega_planner.pipeline import (
     run_mega_pipeline,
-    _extract_feature_name,
+    extract_feature_name,
 )
 
 # ============================================================
@@ -85,10 +85,7 @@ def _strip_plan_footer(text: str) -> str:
 
 def _shorten_feature_desc(desc: str, max_len: int = 50) -> str:
     """Truncate feature description for use in titles."""
-    normalized = " ".join(desc.split())
-    if len(normalized) <= max_len:
-        return normalized
-    return f"{normalized[:max_len]}..."
+    return extract_feature_name(desc, max_len=max_len)
 
 
 def _extract_plan_title(consensus_path: Path) -> str:
@@ -236,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
                 _log("Warning: Issue creation failed, falling back to timestamp artifacts")
 
     _log("Starting mega-planner 7-stage debate pipeline...")
-    _log(f"Feature: {_extract_feature_name(feature_desc)}")
+    _log(f"Feature: {extract_feature_name(feature_desc)}")
     _log_verbose(f"Artifacts prefix: {prefix}")
 
     try:
