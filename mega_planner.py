@@ -355,7 +355,7 @@ def run_mega_pipeline(
         critique_output, proposal_reducer_output, code_reducer_output,
     )
 
-    # Append resolve/refine context if provided
+    # Append resolve context if provided
     if consensus_path and consensus_path.exists():
         prev_plan = consensus_path.read_text()
         debate_report += (
@@ -396,7 +396,6 @@ def run_mega_pipeline(
 # ============================================================
 
 _PLAN_HEADER_RE = re.compile(r"^#\s*(Implementation|Consensus) Plan:\s*(.+)$")
-_PLAN_HEADER_HINT_RE = re.compile(r"(Implementation Plan:|Consensus Plan:)", re.IGNORECASE)
 _PLAN_FOOTER_RE = re.compile(r"^Plan based on commit (?:[0-9a-f]+|unknown)$")
 
 
@@ -495,7 +494,7 @@ def _apply_issue_tag(plan_title: str, issue_number: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point. Positional args serve as feature desc or selections."""
     parser = argparse.ArgumentParser(description="Mega-planner 7-stage pipeline")
-    parser.add_argument("words", nargs="*", default=[], help="Feature description, selections, or refinement focus")
+    parser.add_argument("words", nargs="*", default=[], help="Feature description or selections")
     parser.add_argument("-f", "--from", dest="from_issue", default="", help="Plan from existing issue number")
     parser.add_argument("-r", "--resolve", default="", metavar="ISSUE", help="Resolve disagreements in issue")
     parser.add_argument("--output-dir", default=".tmp")
