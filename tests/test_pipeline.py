@@ -9,15 +9,13 @@ from typing import Callable
 
 import pytest
 
-from mega_planner.pipeline import (
+from mega_planner import (
     AGENT_PROMPTS,
     DEFAULT_BACKENDS,
     STAGE_TOOLS,
     STAGE_PERMISSION_MODE,
     run_mega_pipeline,
     extract_feature_name,
-)
-from mega_planner.cli import (
     _resolve_commit_hash,
     _append_plan_footer,
     _strip_plan_footer,

@@ -1,11 +1,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*.egg-info/
-dist/
-build/
-.eggs/
-*.egg
 .tmp/
 .pytest_cache/
 .mypy_cache/
