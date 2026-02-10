@@ -493,19 +493,20 @@ def _apply_issue_tag(plan_title: str, issue_number: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Main CLI entry point with 4 modes: default, from-issue, refine-issue, resolve-issue."""
+    """CLI entry point. Positional args serve as feature desc, selections, or refinement focus."""
     parser = argparse.ArgumentParser(description="Mega-planner 7-stage pipeline")
-    parser.add_argument("--feature-desc", default="", help="Feature description")
+    parser.add_argument("words", nargs="*", default=[], help="Feature description, selections, or refinement focus")
     parser.add_argument("--from-issue", default="", help="Plan from existing issue number")
     parser.add_argument("--refine-issue", default="", help="Refine existing plan issue")
-    parser.add_argument("--resolve-issue", default="", help="Resolve disagreements in issue")
-    parser.add_argument("--selections", default="", help="Option selections for resolve mode (e.g. 1B,2A)")
+    parser.add_argument("-r", "--resolve", default="", metavar="ISSUE", help="Resolve disagreements in issue")
     parser.add_argument("--output-dir", default=".tmp")
     parser.add_argument("--prefix", default=None)
-    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("--skip-consensus", action="store_true")
     parser.add_argument("--issue-mode", default="true", choices=["true", "false"])
     args = parser.parse_args(argv)
+
+    positional = " ".join(args.words)
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -513,7 +514,7 @@ def main(argv: list[str] | None = None) -> int:
 
     issue_number: str | None = None
     issue_url: str | None = None
-    feature_desc = args.feature_desc
+    feature_desc = ""
     report_paths = None
     consensus_path = None
     history_path = None
@@ -527,8 +528,8 @@ def main(argv: list[str] | None = None) -> int:
             _log(msg)
 
     # --- Resolve mode ---
-    if args.resolve_issue:
-        issue_number = args.resolve_issue
+    if args.resolve:
+        issue_number = args.resolve
         prefix = f"issue-{issue_number}"
         report_paths = {}
         for stage in ["bold", "paranoia", "critique", "proposal-reducer", "code-reducer"]:
@@ -548,7 +549,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         ts = datetime.now().strftime("%Y-%m-%d %H:%M")
         with history_path.open("a") as f:
-            f.write(f"| {ts} | resolve | {args.selections} |\n")
+            f.write(f"| {ts} | resolve | {positional} |\n")
 
         feature_desc = gh_utils.issue_body(issue_number)
         feature_desc = _strip_plan_footer(feature_desc)
@@ -566,8 +567,8 @@ def main(argv: list[str] | None = None) -> int:
                 "(missing Implementation/Consensus Plan headers)"
             )
         feature_desc = issue_body
-        if args.feature_desc:
-            feature_desc = f"{feature_desc}\n\nRefinement focus:\n{args.feature_desc}"
+        if positional:
+            feature_desc = f"{feature_desc}\n\nRefinement focus:\n{positional}"
         history_path = output_dir / f"{prefix}-history.md"
         if not history_path.exists():
             history_path.write_text(
@@ -576,7 +577,7 @@ def main(argv: list[str] | None = None) -> int:
                 "|-----------|------|---------|\n"
             )
         ts = datetime.now().strftime("%Y-%m-%d %H:%M")
-        summary = (args.feature_desc or "general refinement")[:80].replace("\n", " ")
+        summary = (positional or "general refinement")[:80].replace("\n", " ")
         with history_path.open("a") as f:
             f.write(f"| {ts} | refine | {summary} |\n")
 
@@ -589,9 +590,10 @@ def main(argv: list[str] | None = None) -> int:
 
     # --- Default mode ---
     else:
-        if not feature_desc:
-            _log("Error: --feature-desc is required in default mode")
+        if not positional:
+            _log("Error: feature description required (pass as positional argument)")
             return 1
+        feature_desc = positional
         prefix = args.prefix or datetime.now().strftime("%Y%m%d-%H%M%S")
         if issue_mode:
             short_desc = _shorten_feature_desc(feature_desc, max_len=50)
