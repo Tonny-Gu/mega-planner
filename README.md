@@ -14,9 +14,9 @@ Requires `agentize` to be installed in the environment.
 
 ```bash
 mega-planner "Your feature description"
-mega-planner --from-issue 42
-mega-planner --refine-issue 42 "focus on X"
+mega-planner -f 42
 mega-planner -r 42 "1B,2A"
+mega-planner --local "Plan without GitHub issues"
 ```
 
 ## Pipeline Stages
