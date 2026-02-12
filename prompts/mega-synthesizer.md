@@ -43,58 +43,27 @@ Review all five perspectives and determine consensus using these criteria:
 1. Bold and Paranoia propose the same general approach in their shared solutions (may differ in implementation details)
 2. Critique finds no critical blockers for that approach
 3. Both Reducers recommend BOTH proposals (not just one) without major modifications—i.e., changes are <30 lines AND <30% of total LOC
-4. **Neither proposer has unresolved Topics** — i.e., either no Topics exist, or all Topics have been reduced to a single viable variant by critique/reducer filtering
+4. **Neither proposer has unresolved Topics** — i.e., no Topics exist at all
 
 **DISAGREEMENT** = NOT CONSENSUS. If any condition above is not satisfied, disagreement exists.
 
 **Guidance:**
 - When criteria are ambiguous or unclear, DO NOT make a judgment—treat it as DISAGREEMENT
 - Partial consensus is still DISAGREEMENT (e.g., if Reducers only endorse one proposal, or make significant simplifications)
-- **Proposer Topics with 2+ surviving variants are inherently DISAGREEMENT** — they require user selection
+- **Proposer Topics are inherently DISAGREEMENT** — all variants must be presented as options for the developer to decide; critique/reducer data is annotation, not a filter
 
-### Mapping Proposer Topics to Disagreements
+**IMPORTANT: Check for "Selection History" section first!**
 
-**This is a new critical step.** Proposers now output Topic sections with Variants. These must be cross-referenced with critique/reducer findings and mapped to Disagreements.
-
-**Step 1: Collect Topics from both proposers**
-
-Build a merged topic list:
-
-| Topic | Bold | Paranoia | Critique | Reducer | Code Reducer |
-|-------|------|----------|----------|---------|--------------|
-| [Name] | Variants A, B | Variants A, B | [verdicts] | [simplifications] | [LOC data] |
-| [Name] | Variants A, B | — (in shared) | ... | ... | ... |
-| [Name] | — (in shared) | Variants A, B, C | ... | ... | ... |
-
-**Step 2: Filter variants using critique/reducer data**
-
-For each Topic, eliminate variants that are:
-- **Infeasible** — Critique verdict: Infeasible
-- **Strictly dominated** — Reducer: collapsed into another variant
-- **Bloated** — Code Reducer: variant LOC is unreasonable vs alternatives
-
-**Step 3: Determine outcome per Topic**
-
-- **0 variants survive** → Flag as a blocker in Unresolved Decisions (critique output)
-- **1 variant survives** → Absorb into consensus Implementation Steps (no Disagreement needed)
-- **2+ variants survive** → Create a Disagreement section
-
-**Step 4: Handle cross-proposer conflicts on shared solutions**
-
-Even without Topics, Bold and Paranoia's shared solutions may conflict. These are the traditional Disagreements — handle them as before.
-
-**IMPORTANT: Check for "Selection & Refine History" section first!**
-
-The combined report may contain additional sections for resolve/refine modes:
-- `## Part 6: Previous Consensus Plan` - The plan being refined or resolved
-- `## Part 7: Selection & Refine History` - History table tracking all operations
+The combined report may contain additional sections for resolve mode:
+- `## Part 6: Previous Consensus Plan` - The plan being resolved
+- `## Part 7: Selection History` - History table tracking all resolve operations
 
 **If Part 7 exists, the LAST ROW of the history table is the current task.**
 This is the request you must fulfill in this iteration.
 
-If the combined report contains a `## Part 7: Selection & Refine History` section:
+If the combined report contains a `## Part 7: Selection History` section:
 - **CRITICAL**: The current task requirement is defined by the **last row** of the history table
-- The user has provided selections or refinement comments
+- The user has provided selections
 - **Step 1**: Check if selected options are compatible
   - Look for architectural conflicts (e.g., selecting both "create new file" and "modify existing file" for same component)
   - If incompatible: Report the conflict clearly and suggest which selection to change
@@ -105,7 +74,6 @@ If the combined report contains a `## Part 7: Selection & Refine History` sectio
   - Include code drafts from the selected options
   - **Skip Disagreement Summary section** (already resolved)
   - **Skip Consensus Status section** (consensus already determined in previous iteration)
-  - Include Validation section at the end (see output format below)
 - Skip the "if consensus IS possible / IS NOT possible" logic below
 
 **If consensus IS possible:**
@@ -113,7 +81,7 @@ If the combined report contains a `## Part 7: Selection & Refine History` sectio
 - Incorporate the best ideas from both proposers
 - Address risks from critique
 - Apply simplifications from both reducers
-- Absorb any single-survivor Topics into Implementation Steps
+- Present any remaining Topics as Disagreements for developer selection
 
 **If DISAGREEMENT exists:**
 
@@ -182,9 +150,9 @@ Below is the combined report containing all five perspectives:
 
 **Note:** If the report contains:
 - `## Part 6: Previous Consensus Plan` - Reference this as the baseline being modified
-- `## Part 7: Selection & Refine History` - The LAST ROW is your current task
+- `## Part 7: Selection History` - The LAST ROW is your current task
 
-When history exists, produce a single unified plan applying the latest selection/refine request.
+When history exists, produce a single unified plan applying the latest selection.
 
 ---
 
@@ -204,7 +172,6 @@ Use this format for ALL outputs (consensus or disagreement):
 ## Table of Contents
 
 - [Agent Perspectives Summary](#agent-perspectives-summary)
-- [Topic Merge Summary](#topic-merge-summary)
 - [Consensus Status](#consensus-status)
 - [Goal](#goal)
 - [Codebase Analysis](#codebase-analysis)
@@ -214,7 +181,6 @@ Use this format for ALL outputs (consensus or disagreement):
 - [Disagreement Summary](#disagreement-summary)
 - [Disagreement 1: \[Topic\]](#disagreement-1-topic) *(if applicable)*
 - [Selection History](#selection-history)
-- [Refine History](#refine-history)
 
 ---
 
@@ -229,28 +195,10 @@ Use this format for ALL outputs (consensus or disagreement):
 | **Proposal Reducer** | [Simplification direction] | [What complexity was removed] |
 | **Code Reducer** | [Code impact assessment] | [LOC delta summary] |
 
-<a name="topic-merge-summary"></a>
-## Topic Merge Summary
-
-> Cross-reference Topics from both proposers with critique/reducer findings to determine which become Disagreements, which are absorbed into consensus, and which are eliminated.
->
-> If no proposer identified any Topics, write "No proposer Topics — all points are single-path." and skip this table.
-
-| # | Topic | Origin | Bold Variants | Paranoia Variants | Surviving Variants | Outcome |
-|---|-------|--------|---------------|-------------------|--------------------|---------|
-| 1 | [Name] | Ambiguity | A, B | A, B | Bold A, Paranoia A | → Disagreement 1 |
-| 2 | [Name] | Alternative | A, B | — (in shared) | Bold A (only survivor) | → Absorbed into Step N |
-| 3 | [Name] | Ambiguity | — (in shared) | A, B, C | Paranoia B (Critique: A infeasible, Reducer: C dominated) | → Absorbed into Step M |
-
-**Legend:**
-- **Origin**: `Ambiguity` (unclear requirement) or `Alternative` (clear requirement, multiple approaches)
-- **Surviving Variants**: After filtering by critique (infeasible), reducer (collapsed/dominated), and code reducer (bloated)
-- **Outcome**: `→ Disagreement N` (2+ survivors) or `→ Absorbed into Step N` (1 survivor) or `→ Blocker` (0 survivors)
-
 <a name="consensus-status"></a>
 ## Consensus Status
 
-[One paragraph explaining the consensus determination, citing key evidence from agents' positions. Reference the Topic Merge Summary when Topics exist.]
+[One paragraph explaining the consensus determination, citing key evidence from agents' positions.]
 
 <a name="goal"></a>
 ## Goal
@@ -272,7 +220,7 @@ Use this format for ALL outputs (consensus or disagreement):
 <a name="implementation-steps"></a>
 ## Implementation Steps
 
-> **Note**: Include only consensus steps here—steps that ALL agents agree on, plus any single-survivor Topics absorbed from the Topic Merge Summary. Disputed approaches belong in their respective `## Disagreement N` sections below.
+> **Note**: Include only consensus steps here—steps that ALL agents agree on. All Topics with variants belong in their respective `## Disagreement N` sections below.
 >
 > **MANDATORY: Design-first TDD ordering**: Steps MUST follow Documentation → Tests → Implementation (never invert). Every plan MUST include at least one test step with a code draft.
 
@@ -515,16 +463,6 @@ Use this format for ALL outputs (consensus or disagreement):
 | [Previous rows from history file] |
 | 2026-01-22 19:30 | 1: Agent Naming | 1A (Paranoia, **Recommended**): suffix; 1B (Bold): prefix | 1B (Bold) | Prefix matches existing |
 
-<a name="refine-history"></a>
-## Refine History
-
-**Row Granularity**: Each row represents one `--refine` operation.
-
-| Timestamp | Summary |
-|-----------|---------|
-| [Previous rows from history file] |
-| 2026-01-22 16:00 | Add error handling to Step 3 |
-
 ## Option Compatibility Check
 
 **Status**: VALIDATED | CONFLICT DETECTED
@@ -546,7 +484,7 @@ All selected options are architecturally compatible. No conflicting file modific
 
 ### When to Include Disagreement Sections
 
-**If no disagreements exist**: Omit Disagreement Summary, Disagreement sections, and Topic Merge Summary (if all topics were absorbed). The unified format's Goal, Codebase Analysis, and Implementation Steps contain the complete agreed plan.
+**If no disagreements exist**: Omit Disagreement Summary and Disagreement sections. The unified format's Goal, Codebase Analysis, and Implementation Steps contain the complete agreed plan.
 
 **If disagreements exist**: Each disagreement gets its own section with Agent Perspectives table, Origin tag, and A/B/C Resolution Options.
 
