@@ -452,3 +452,24 @@ class TestCLIArgumentParsing:
         result = main(["Test", "feature", "--output-dir", str(tmp_output_dir), "--local"])
         assert result == 0
         assert len(create_called) == 0
+
+    def test_override_mode_uses_positional_desc(self, tmp_output_dir, stub_runner, monkeypatch):
+        """--override takes issue number but feature desc comes from positional args."""
+        captured = {}
+
+        def fake_pipeline(desc, **kw):
+            captured["desc"] = desc
+            captured["prefix"] = kw.get("prefix")
+            return {}
+
+        monkeypatch.setattr("mega_planner.run_mega_pipeline", fake_pipeline)
+        monkeypatch.setattr("mega_planner.gh_utils.issue_url", lambda n: f"https://github.com/test/issues/{n}")
+        result = main(["--override", "42", "Custom", "feature", "desc", "--output-dir", str(tmp_output_dir)])
+        assert result == 0
+        assert captured["desc"] == "Custom feature desc"
+        assert captured["prefix"] == "issue-42"
+
+    def test_override_mode_no_positional_fails(self, tmp_output_dir, monkeypatch):
+        """--override without positional args fails."""
+        result = main(["--override", "42", "--output-dir", str(tmp_output_dir)])
+        assert result != 0
