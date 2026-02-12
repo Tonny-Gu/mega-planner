@@ -62,7 +62,7 @@ Tier 4:  [Consensus]
 ```
 mega_planner.py          # Single-file pipeline orchestrator + CLI
 prompts/                 # Agent prompt templates (markdown)
-  understander.md
+  mega-understander.md
   mega-bold-proposer.md
   mega-paranoia-proposer.md
   mega-proposal-critique.md
