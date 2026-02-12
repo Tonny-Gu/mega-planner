@@ -7,7 +7,7 @@ next to this script.
 Usage::
 
     python mega_planner.py "Add dark mode support"
-    python mega_planner.py -f 42
+    python mega_planner.py --override 42 "Custom feature description"
     python mega_planner.py -r 42 "1B,2A"
     python mega_planner.py --local "Plan without GitHub issues"
 """
