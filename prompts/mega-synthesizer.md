@@ -99,9 +99,8 @@ Use this format for ALL outputs (consensus or disagreement):
 ## Table of Contents
 
 - [Agent Perspectives Summary](#agent-perspectives-summary)
-- [Step Matching](#step-matching)
-- [Topic Matching](#topic-matching)
-- [Consensus Status](#consensus-status)
+  - [Step Matching](#step-matching)
+  - [Topic Matching](#topic-matching)
 - [Goal](#goal)
 - [Codebase Analysis](#codebase-analysis)
 - [Implementation Steps](#implementation-steps)
@@ -125,7 +124,10 @@ Use this format for ALL outputs (consensus or disagreement):
 | **Code Reducer** | [Code impact assessment] | [LOC delta summary] |
 
 <a name="step-matching"></a>
-## Step Matching
+### Step Matching
+
+<details>
+<summary><b>Step Matching Table</b></summary>
 
 > Cross-reference shared solution steps from both proposers with critique/reducer findings.
 > Every step from every proposer's shared solution MUST appear as a row. Do NOT omit any step.
@@ -149,8 +151,13 @@ Use this format for ALL outputs (consensus or disagreement):
 - Critique flags critical blockers for that step
 - Either Reducer recommends major modifications (≥30 lines OR ≥30% of step LOC)
 
+</details>
+
 <a name="topic-matching"></a>
-## Topic Matching
+### Topic Matching
+
+<details>
+<summary><b>Topic Matching Table</b></summary>
 
 > Cross-reference variant Topics from both proposers with critique/reducer findings.
 > Every Topic from every proposer MUST appear as a row. Destination is ALWAYS a Disagreement.
@@ -165,10 +172,7 @@ Use this format for ALL outputs (consensus or disagreement):
 - **Critique / Proposal Reducer / Code Reducer**: Per-variant analysis. Leave empty if no opinion or no significant concern.
 - **Destination**: **Always `→ Disagreement N`** — every Topic is a disagreement point, regardless of how many variants survive or whether only one proposer raised it.
 
-<a name="consensus-status"></a>
-## Consensus Status
-
-[One paragraph explaining the consensus determination, citing the Step Matching and Topic Matching tables as evidence.]
+</details>
 
 <a name="goal"></a>
 ## Goal
