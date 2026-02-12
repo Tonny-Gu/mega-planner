@@ -35,130 +35,57 @@ Each downstream agent (critique, proposal reducer, code reducer) organizes its a
 
 ## Your Task
 
-Review all five perspectives and determine consensus using these criteria:
+**Check for `## Part 7: Selection History` in the combined report first to determine which mode to use.**
 
-### Consensus Definition
+### Mode 1: Resolve (when Part 7 exists)
 
-**CONSENSUS** is reached when ALL of the following are true:
-1. Bold and Paranoia propose the same general approach in their shared solutions (may differ in implementation details)
-2. Critique finds no critical blockers for that approach
-3. Both Reducers recommend BOTH proposals (not just one) without major modifications—i.e., changes are <30 lines AND <30% of total LOC
-4. **Neither proposer has unresolved Topics** — i.e., no Topics exist at all
+The user has provided selections for previously identified disagreements.
 
-**DISAGREEMENT** = NOT CONSENSUS. If any condition above is not satisfied, disagreement exists.
+- `## Part 6: Previous Consensus Plan` — the plan being resolved
+- `## Part 7: Selection History` — history table tracking all resolve operations
 
-**Guidance:**
-- When criteria are ambiguous or unclear, DO NOT make a judgment—treat it as DISAGREEMENT
-- Partial consensus is still DISAGREEMENT (e.g., if Reducers only endorse one proposal, or make significant simplifications)
-- **Proposer Topics are inherently DISAGREEMENT** — all variants must be presented as options for the developer to decide; critique/reducer data is annotation, not a filter
+The **last row** of the history table is the current task.
 
-**IMPORTANT: Check for "Selection History" section first!**
+1. **Check compatibility**: Look for architectural conflicts between selected options (e.g., selecting both "create new file" and "modify existing file" for the same component). If incompatible, report the conflict and suggest which selection to change.
+2. **Apply selections**: Merge the selected approaches into the previous consensus plan (Part 6). Produce a single unified plan — no Disagreement sections, no Options. Use standard output format (Goal, Codebase Analysis, Implementation Steps) with code drafts from selected options. Skip Disagreement Summary and Consensus Status sections.
 
-The combined report may contain additional sections for resolve mode:
-- `## Part 6: Previous Consensus Plan` - The plan being resolved
-- `## Part 7: Selection History` - History table tracking all resolve operations
+### Mode 2: Synthesis (when Part 7 does NOT exist)
 
-**If Part 7 exists, the LAST ROW of the history table is the current task.**
-This is the request you must fulfill in this iteration.
+Review all five perspectives and fill in the **Step Matching** and **Topic Matching** tables (see Output Format). These two tables are your primary deliverable — they cross-reference every proposer step and topic against all five agents, and their Destination column determines which parts of the plan are consensus steps and which become Disagreement sections.
 
-If the combined report contains a `## Part 7: Selection History` section:
-- **CRITICAL**: The current task requirement is defined by the **last row** of the history table
-- The user has provided selections
-- **Step 1**: Check if selected options are compatible
-  - Look for architectural conflicts (e.g., selecting both "create new file" and "modify existing file" for same component)
-  - If incompatible: Report the conflict clearly and suggest which selection to change
-- **Step 2**: If compatible, apply the current task (last row) to the previous consensus plan (Part 6)
-  - Produce a single unified plan (no Disagreement sections, no Options)
-  - Merge the selected approaches coherently into Implementation Steps
-  - Use standard format: Goal, Codebase Analysis, Implementation Steps
-  - Include code drafts from the selected options
-  - **Skip Disagreement Summary section** (already resolved)
-  - **Skip Consensus Status section** (consensus already determined in previous iteration)
-- Skip the "if consensus IS possible / IS NOT possible" logic below
-
-**If consensus IS possible:**
-- Synthesize a single balanced implementation plan
-- Incorporate the best ideas from both proposers
-- Address risks from critique
-- Apply simplifications from both reducers
-- Present any remaining Topics as Disagreements for developer selection
-
-**If DISAGREEMENT exists:**
-
-Generate resolution options for each disagreement point:
-
-**Option Requirements:**
-- **Minimum 2 options required**: Conservative (lower risk) and Aggressive (higher risk)
+**For each Disagreement**, generate resolution options:
+- **Minimum 2 options**: Conservative (lower risk) and Aggressive (higher risk)
 - **Encouraged 3 options**: Conservative, Balanced, and Aggressive
-- **No upper limit**: Generate as many distinct options as the agent positions support
+- **No upper limit**: As many distinct options as agent positions support
 
-**Source Attribution (MANDATORY):**
-Each option MUST specify its source (which agent(s) it derives from).
+## Rules
 
-**Option Generation Guidelines:**
-- Derive options from ACTUAL agent positions and proposer variants, not abstract categories
-- Only include options that are materially different from each other
-- If an option would be identical to another, omit it
-- Each option must include complete code diffs, not summaries
-- For Topic-originated Disagreements: options map directly to surviving proposer variants (with critique/reducer annotations)
-
-## Refutation Requirements for Synthesis
-
-**CRITICAL**: When reconciling conflicting proposals, disagreements MUST be resolved with evidence.
-
-### Rule 1: Cite Both Sides
-
-When proposals disagree, document both positions in the **Agent Perspectives** table
-under each Disagreement section (see output format template below for table structure).
-
-### Rule 2: No Automatic Dropping
-
-**PROHIBITION**: You MUST NOT automatically drop, reject, or exclude any idea from either proposal.
-
-**Core Principle**: If not consensus, then disagreement.
-
-When agents propose different approaches or when an idea would otherwise be "dropped":
-1. **DO NOT** autonomously decide to drop, reject, or exclude the idea
-2. **DO** create a Disagreement section exposing the tension
-3. **DO** present at least 2 options: one that includes the idea, one that excludes it
-4. **DO** include evidence from critique/reducers in option rationales
+### Rule 1: AI Recommendation is Advisory Only
 
 **AI Recommendation** in each Disagreement section provides advisory guidance,
 but the developer makes the final selection via `--resolve` mode.
+AI MUST NOT use its recommendation to drop, reject, or exclude any option.
 
-### Rule 3: Hybrid Must Justify Both Sources
+### Rule 2: Hybrid Must Justify Both Sources
 
-If combining elements from both proposals:
+If combining elements from both proposals in a consensus step:
 ```
 **From Bold**: [Element] - Why: [Justification]
 **From Paranoia**: [Element] - Why: [Justification]
 **Integration**: [How they work together]
 ```
 
-### Evidence Requirements for Options
+### Rule 3: Option Completeness
 
-Each option MUST include:
-1. **Source attribution**: Which proposer(s) this option derives from
+Each option MUST include ALL of the following. Options lacking any are INVALID.
+
+1. **Source attribution**: Which proposer(s)/variant(s) this derives from (e.g., "From Bold Variant 1A", "From Paranoia + Code Reducer")
 2. **Evidence for viability**: Cite specific critique/reducer findings
 3. **Trade-off acknowledgment**: What is sacrificed and why it's acceptable
-
-Options without this evidence are invalid.
-
-## Input: Combined Report
-
-Below is the combined report containing all five perspectives:
-
-**Note:** If the report contains:
-- `## Part 6: Previous Consensus Plan` - Reference this as the baseline being modified
-- `## Part 7: Selection History` - The LAST ROW is your current task
-
-When history exists, produce a single unified plan applying the latest selection.
-
----
-
-{{COMBINED_REPORT}}
-
----
+4. File Changes table
+5. Implementation Steps (following Documentation → Tests → Implementation ordering)
+6. Code Draft in collapsible `<details>` block
+7. Risks and Mitigations table
 
 ## Output Requirements
 
@@ -166,12 +93,14 @@ When history exists, produce a single unified plan applying the latest selection
 
 Use this format for ALL outputs (consensus or disagreement):
 
-~~~markdown
+~~~~markdown
 # Implementation Plan: {{FEATURE_NAME}}
 
 ## Table of Contents
 
 - [Agent Perspectives Summary](#agent-perspectives-summary)
+- [Step Matching](#step-matching)
+- [Topic Matching](#topic-matching)
 - [Consensus Status](#consensus-status)
 - [Goal](#goal)
 - [Codebase Analysis](#codebase-analysis)
@@ -195,10 +124,51 @@ Use this format for ALL outputs (consensus or disagreement):
 | **Proposal Reducer** | [Simplification direction] | [What complexity was removed] |
 | **Code Reducer** | [Code impact assessment] | [LOC delta summary] |
 
+<a name="step-matching"></a>
+## Step Matching
+
+> Cross-reference shared solution steps from both proposers with critique/reducer findings.
+> Every step from every proposer's shared solution MUST appear as a row. Do NOT omit any step.
+
+| # | Bold | Paranoia | Critique | Proposal Reducer | Code Reducer | Destination |
+|---|------|----------|----------|------------------|--------------|-------------|
+| 1 | [Step description] | [Same/similar step description] | [Verdict, or empty if no opinion] | [Simplification, or empty if <30 LOC and <30% change] | [LOC impact, or empty if no concern] | → Step 1 |
+| 2 | [Step description] | — | — | — | — | → Disagreement 1 |
+| 3 | — | [Step description] | [Verdict] | — | — | → Disagreement 2 |
+
+**Column rules:**
+- **Bold / Paranoia**: The step as described in that proposer's shared solution. Leave `—` if only the other proposer proposed this step.
+- **Critique**: Feasibility verdict for this step. Leave empty if no critical blockers or concerns.
+- **Proposal Reducer / Code Reducer**: Noted only when the reducer recommends major modifications (≥30 lines OR ≥30% of step LOC). Leave empty otherwise.
+- **Destination**: Where this step ends up in the synthesized plan:
+  - `→ Step N` — consensus step (BOTH proposers proposed it, no critical issues)
+  - `→ Disagreement N` — disagreement point (only one proposer proposed it, OR critique/reducer flagged major issues)
+
+**A step is automatically `→ Disagreement` when ANY of the following is true:**
+- `—` in either Bold or Paranoia column (only one proposer proposed it)
+- Critique flags critical blockers for that step
+- Either Reducer recommends major modifications (≥30 lines OR ≥30% of step LOC)
+
+<a name="topic-matching"></a>
+## Topic Matching
+
+> Cross-reference variant Topics from both proposers with critique/reducer findings.
+> Every Topic from every proposer MUST appear as a row. Destination is ALWAYS a Disagreement.
+
+| # | Bold | Paranoia | Critique | Proposal Reducer | Code Reducer | Destination |
+|---|------|----------|----------|------------------|--------------|-------------|
+| 1 | Topic: [Name], Variants: A, B | Topic: [Name], Variants: A, B | [Per-variant verdicts, or empty] | [Simplification, or empty] | [LOC data, or empty] | → Disagreement 3 |
+| 2 | Topic: [Name], Variants: A, B | — | [Per-variant verdicts] | — | — | → Disagreement 4 |
+
+**Column rules:**
+- **Bold / Paranoia**: The Topic name and its Variants as identified by that proposer. Leave `—` if only the other proposer identified this Topic.
+- **Critique / Proposal Reducer / Code Reducer**: Per-variant analysis. Leave empty if no opinion or no significant concern.
+- **Destination**: **Always `→ Disagreement N`** — every Topic is a disagreement point, regardless of how many variants survive or whether only one proposer raised it.
+
 <a name="consensus-status"></a>
 ## Consensus Status
 
-[One paragraph explaining the consensus determination, citing key evidence from agents' positions.]
+[One paragraph explaining the consensus determination, citing the Step Matching and Topic Matching tables as evidence.]
 
 <a name="goal"></a>
 ## Goal
@@ -478,38 +448,7 @@ All selected options are architecturally compatible. No conflicting file modific
 ## Notes
 
 [Any observations, caveats, or supplementary remarks that don't fit the sections above]
-~~~
-
-## Output Guidelines
-
-### When to Include Disagreement Sections
-
-**If no disagreements exist**: Omit Disagreement Summary and Disagreement sections. The unified format's Goal, Codebase Analysis, and Implementation Steps contain the complete agreed plan.
-
-**If disagreements exist**: Each disagreement gets its own section with Agent Perspectives table, Origin tag, and A/B/C Resolution Options.
-
-### Topic-Originated Disagreements vs Cross-Proposer Disagreements
-
-**Topic-originated**: Options map directly to surviving proposer Variants. Include critique feasibility verdicts and reducer/code-reducer data as annotations on each option. The proposer's per-variant Benefits and Trade-offs should be carried forward into the option description.
-
-**Cross-proposer**: Traditional disagreements where Bold and Paranoia shared solutions conflict. Handle as before — derive options from agent positions.
-
-### Option Requirements
-
-Each disagreement MUST have at least 2 options:
-- Option [N]A (Conservative): Lower risk, smaller change scope
-- Option [N]B (Aggressive): Higher risk, larger change scope
-- Option [N]C (Balanced): Synthesized approach (encouraged but optional)
-- Additional options as supported by agent positions
-
-Each option MUST include:
-1. Summary with **Source attribution** (e.g., "From Bold Variant 1A", "From Paranoia + Code Reducer")
-2. File Changes table
-3. Implementation Steps (following Documentation → Tests → Implementation ordering)
-4. Code Draft in collapsible `<details>` block
-5. Risks and Mitigations table
-
-Options lacking any of these sections are INVALID.
+~~~~
 
 ## Output Discipline
 
