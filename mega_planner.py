@@ -65,9 +65,7 @@ STAGE_TOOLS = {
     "consensus": "Read,Grep,Glob",
 }
 
-STAGE_PERMISSION_MODE = {
-    "bold": "plan",
-}
+STAGE_PERMISSION_MODE = {}
 
 
 # ============================================================
