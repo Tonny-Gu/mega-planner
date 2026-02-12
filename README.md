@@ -13,8 +13,8 @@
 # Plan from a free-text description (creates a GitHub issue automatically)
 python mega_planner.py "Add dark mode support"
 
-# Plan from an existing GitHub issue
-python mega_planner.py -f 42
+# Plan for an existing issue with a custom description (overrides issue body)
+python mega_planner.py --override 42 "Custom feature description"
 
 # Resolve disagreements in a previous debate (re-runs consensus only)
 python mega_planner.py -r 42 "1B,2A"
@@ -27,7 +27,7 @@ python mega_planner.py --local "Plan without GitHub issues"
 
 | Flag | Description |
 |------|-------------|
-| `-f`, `--from` | Plan from an existing GitHub issue number |
+| `--override` | Plan for an existing issue number, using positional args as feature description |
 | `-r`, `--resolve` | Re-run consensus for an existing debate, applying new selections |
 | `--local` | Skip GitHub issue creation/update |
 | `--output-dir` | Artifact output directory (default: `.tmp`) |
@@ -91,7 +91,7 @@ Each run produces intermediate files in the output directory (`.tmp/` by default
 {prefix}-consensus-input.md / output.md   # Final plan
 ```
 
-When using `-f` or default mode, the prefix is `issue-{N}`. In local mode without `--prefix`, it defaults to a timestamp.
+When using `--override` or default mode, the prefix is `issue-{N}`. In local mode without `--prefix`, it defaults to a timestamp.
 
 ## Development
 

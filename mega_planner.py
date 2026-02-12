@@ -7,7 +7,7 @@ next to this script.
 Usage::
 
     python mega_planner.py "Add dark mode support"
-    python mega_planner.py -f 42
+    python mega_planner.py --override 42 "Custom feature description"
     python mega_planner.py -r 42 "1B,2A"
     python mega_planner.py --local "Plan without GitHub issues"
 """
@@ -495,7 +495,7 @@ def main(argv: list[str] | None = None) -> int:
     """CLI entry point. Positional args serve as feature desc or selections."""
     parser = argparse.ArgumentParser(description="Mega-planner 7-stage pipeline")
     parser.add_argument("words", nargs="*", default=[], help="Feature description or selections")
-    parser.add_argument("-f", "--from", dest="from_issue", default="", help="Plan from existing issue number")
+    parser.add_argument("--override", default="", metavar="ISSUE", help="Plan for existing issue using positional args as description")
     parser.add_argument("-r", "--resolve", default="", metavar="ISSUE", help="Resolve disagreements in issue")
     parser.add_argument("--output-dir", default=".tmp")
     parser.add_argument("--prefix", default=None)
@@ -546,12 +546,15 @@ def main(argv: list[str] | None = None) -> int:
         feature_desc = gh_utils.issue_body(issue_number)
         feature_desc = _strip_plan_footer(feature_desc)
 
-    # --- From-issue mode ---
-    elif args.from_issue:
-        issue_number = args.from_issue
+    # --- Override mode ---
+    elif args.override:
+        if not positional:
+            _log("Error: feature description required (pass as positional argument)")
+            return 1
+        issue_number = args.override
         issue_url = gh_utils.issue_url(issue_number)
         prefix = f"issue-{issue_number}"
-        feature_desc = gh_utils.issue_body(issue_number)
+        feature_desc = positional
 
     # --- Default mode ---
     else:
