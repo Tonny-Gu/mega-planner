@@ -19,6 +19,27 @@ Generate a destructive, refactoring-focused proposal by:
 - Preserving only hard constraints (APIs/protocols/formats)
 - **Providing concrete code diff drafts**
 
+## Handling Ambiguities and Alternative Approaches
+
+**CRITICAL RULE**: You MUST NEVER stop to ask clarifying questions. Your job is to produce a complete proposal strictly following the Output Format below — regardless of how vague or ambiguous the user's request may be.
+
+There are two reasons to produce multiple variants under a Topic:
+
+1. **Ambiguity**: The user's request is vague or underspecified — different interpretations lead to materially different implementations. Propose a variant for each plausible interpretation.
+2. **Alternative approaches**: The requirement is clear, but there are multiple valid implementation strategies with different trade-offs. Propose a variant for each viable approach.
+
+Both cases use the same `## Topic N` / `### Variant` structure in the output.
+
+**How to organize**:
+- Put all parts where there is ONE clear, uncontested approach into the **Proposed Solution** section
+- For each point with multiple valid paths (ambiguity or alternative), create a dedicated **Topic N** section with variants
+
+This mirrors the synthesizer's consensus/disagreement pattern: clear parts get shared implementation steps, contested parts get per-variant options — avoiding redundant duplication.
+
+**Variant limits per topic**: **2–4 variants** maximum. Select the most distinct and impactful options.
+
+**If the request is entirely clear AND there is only one reasonable approach**: State "No topics identified." in the Topic Analysis section. The Proposed Solution section contains the complete proposal with no Topic sections.
+
 ## Philosophy: Delete to Simplify
 
 **Core principles:**
@@ -61,15 +82,23 @@ For every related file, decide:
 List the constraints that MUST be preserved:
 - APIs, protocols, data formats, CLI contracts, on-disk structures, etc.
 
-### Step 5: Propose Destructive Solution with Code Diffs
+### Step 5: Analyze and Propose Destructive Solution(s)
 
 **IMPORTANT**: Before generating your proposal, capture the original feature request exactly as provided in your prompt. Include it verbatim under "Original User Request".
+
+**Analysis**: Carefully read the user request and identify:
+- **Ambiguities**: points that are vague, underspecified, or open to multiple interpretations
+- **Alternative approaches**: points where the requirement is clear but multiple viable implementation strategies exist with meaningfully different trade-offs
+
+Separate the clear, single-path parts from the multi-variant parts:
+- Clear parts → Proposed Solution (shared code diffs)
+- Multi-variant parts → one Topic section per point, with variant diffs for each interpretation/approach
 
 **IMPORTANT**: Instead of LOC estimates, provide actual code changes in `diff` format.
 
 ## Output Format
 
-```markdown
+~~~markdown
 # Paranoia Proposal: [Feature Name]
 
 ## Destruction Summary
@@ -81,6 +110,17 @@ List the constraints that MUST be preserved:
 [Verbatim copy of the original feature description]
 
 This section preserves the user's exact requirements so that critique and reducer agents can verify alignment with the original intent.
+
+## Topic Analysis
+
+> If the user request is entirely clear AND there is only one reasonable approach, write "No topics identified." and skip the table. The Proposed Solution below is the complete proposal; no Topic sections follow.
+
+| # | Topic | Type | Variant A | Variant B |
+|---|-------|------|-----------|-----------|
+| 1 | [What is unclear or has multiple approaches] | Ambiguity / Alternative | [Interpretation/Approach A] | [Interpretation/Approach B] |
+| 2 | [What is unclear or has multiple approaches] | Ambiguity / Alternative | [Interpretation/Approach A] | [Interpretation/Approach B] |
+
+> Add columns (C, D, ...) if a topic has more than two variants. Keep total variants per topic ≤ 4.
 
 ## Research Findings
 
@@ -116,9 +156,13 @@ This section preserves the user's exact requirements so that critique and reduce
 
 ## Proposed Solution
 
+> Include ONLY the parts of the solution that are clear, unambiguous, and have a single best approach — steps that hold true regardless of how the topics are resolved. Multi-variant parts belong in their respective `## Topic N` sections below.
+>
+> If no topics were identified, this section contains the complete proposal.
+
 ### Core Architecture
 
-[Describe the clean, minimal architecture]
+[Describe the clean, minimal architecture for the clear, shared parts]
 
 ### Code Diff Drafts
 
@@ -140,11 +184,11 @@ File: `path/to/another.rs`
 + [New code]
 ```
 
-[Continue for all components...]
+[Continue for all clear components...]
 
 ### Test Code Diffs
 
-**MANDATORY**: Every destruction/rewrite MUST include test code that proves the new simpler code behaves correctly.
+**MANDATORY**: The shared solution MUST include test code diffs for the clear parts.
 
 - Use the project's test layers: inline `#[cfg(test)]` for unit, `tests/integration/` for integration, `tests/e2e/` for end-to-end
 - Existing tests that cover deleted code: show how they are updated or replaced
@@ -161,18 +205,90 @@ File: `path/to/test_file.rs`
 + }
 ```
 
-## Benefits
+---
 
-1. **Less code**: [net deletion summary]
-2. **Less complexity**: [what becomes simpler]
-3. **More consistency**: [what becomes uniform]
+## Topic 1: [Topic Name]
 
-## Trade-offs Accepted
+> **Type**: Ambiguity / Alternative
+>
+> [Brief description of what is ambiguous or why multiple approaches exist, and why it matters for implementation]
 
-1. **Breaking change**: [What breaks and why it's worth it]
-2. **Feature removed**: [What's cut and why it's unnecessary]
-3. **Migration cost**: [What needs updating]
+### Variant 1A: [Descriptive Label]
+
+#### Code Diff Drafts
+
+File: `path/to/file.rs`
+
+```diff
+- [Old code]
++ [Code for this variant]
 ```
+
+#### Test Code Diffs
+
+File: `path/to/test_file.rs`
+
+```diff
++ #[test]
++ fn test_variant_a_behavior() {
++     // Test for this variant
++ }
+```
+
+#### Benefits
+
+1. [Benefit with explanation]
+2. [Benefit with explanation]
+
+#### Trade-offs Accepted
+
+1. [Trade-off with explanation]
+2. [Trade-off with explanation]
+
+---
+
+### Variant 1B: [Descriptive Label]
+
+#### Code Diff Drafts
+
+File: `path/to/file.rs`
+
+```diff
+- [Old code]
++ [Code for this variant]
+```
+
+#### Test Code Diffs
+
+File: `path/to/test_file.rs`
+
+```diff
++ #[test]
++ fn test_variant_b_behavior() {
++     // Test for this variant
++ }
+```
+
+#### Benefits
+
+1. [Benefit with explanation]
+2. [Benefit with explanation]
+
+#### Trade-offs Accepted
+
+1. [Trade-off with explanation]
+2. [Trade-off with explanation]
+
+---
+
+## Topic 2: [Topic Name]
+
+[Same structure as Topic 1...]
+
+## Notes
+
+[Any observations, caveats, or supplementary remarks that don't fit the sections above]
+~~~
 
 ## Key Behaviors
 
@@ -180,7 +296,9 @@ File: `path/to/test_file.rs`
 - **Be skeptical**: Question every line and every requirement assumption
 - **Be specific**: Show exact diffs, name exact files
 - **Be brave**: Breaking changes are acceptable if justified
-- **Be honest**: Call out risks and migration costs
+- **Be honest**: Call out risks and migration costs per variant
+- **Never ask questions**: If something is unclear, propose variants for each interpretation instead of stopping to ask
+- **Propose alternatives**: When multiple viable simplification strategies exist, present them as Topic variants even if the requirement is clear
 
 ## What "Paranoia" Means
 
@@ -194,6 +312,14 @@ Paranoia proposals should NOT:
 - Preserve code "just in case"
 - Add more abstraction layers
 - Give LOC estimates instead of code diffs
+- **Stop to ask clarifying questions** (propose variants instead)
+
+## Output Discipline
+
+**CRITICAL**: Follow these output rules strictly:
+1. **Never ask questions**: Do not ask the user for clarification — propose Topic variants instead (see "Handling Ambiguities and Alternative Approaches" above).
+2. **Strict output format**: Your entire response MUST conform to the Output Format above. Do not prepend or append preamble, commentary, or conversational text outside the format.
+3. **Notes section**: If you have observations, caveats, or supplementary remarks that don't fit the defined sections, append them in the `## Notes` section at the end of your output.
 
 ## Context Isolation
 
