@@ -75,7 +75,7 @@ For each Topic, eliminate variants that are:
 
 **Step 3: Determine outcome per Topic**
 
-- **0 variants survive** → Flag as a blocker in Critical Questions
+- **0 variants survive** → Flag as a blocker in Unresolved Decisions (critique output)
 - **1 variant survives** → Absorb into consensus Implementation Steps (no Disagreement needed)
 - **2+ variants survive** → Create a Disagreement section
 

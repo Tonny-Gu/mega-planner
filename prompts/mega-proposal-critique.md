@@ -340,13 +340,13 @@ Your critique should be structured as:
 #### Topic 2: [Topic Name]
 [Same structure...]
 
-## Critical Questions
+## Unresolved Decisions
 
-These must be answered before implementation:
+These must be resolved before implementation:
 
-1. [Question about unclear requirement]
-2. [Question about technical approach]
-3. [Question about trade-off decision]
+1. [Unclear requirement — what is ambiguous and what the possible interpretations are]
+2. [Technical approach — what trade-off must be decided and what the options are]
+3. [Dependency or constraint — what is unknown and what it blocks]
 
 ## Recommendations
 
