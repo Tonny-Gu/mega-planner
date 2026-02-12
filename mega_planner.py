@@ -37,7 +37,7 @@ _FRONTMATTER_RE = re.compile(r"^---\s*\n.*?\n---\s*\n", re.DOTALL)
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 AGENT_PROMPTS = {
-    "understander": "understander.md",
+    "understander": "mega-understander.md",
     "bold": "mega-bold-proposer.md",
     "paranoia": "mega-paranoia-proposer.md",
     "critique": "mega-proposal-critique.md",
