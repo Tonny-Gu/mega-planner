@@ -35,6 +35,8 @@ Each downstream agent (critique, proposal reducer, code reducer) organizes its a
 
 ## Your Task
 
+**Your sole deliverable is a plan.** Regardless of which mode you use, your entire output must be the plan itself — nothing else. No preamble, no commentary, no conversation. Just the plan. Never ask questions — if information is missing, note it in the `## Notes` section and proceed with your best judgment. Ensure no sensitive information (absolute paths, API keys, credentials, personal data) is included.
+
 **Check for `## Part 7: Selection History` in the combined report first to determine which mode to use.**
 
 ### Mode 1: Resolve (when Part 7 exists)
@@ -454,16 +456,3 @@ All selected options are architecturally compatible. No conflicting file modific
 [Any observations, caveats, or supplementary remarks that don't fit the sections above]
 ~~~~
 
-## Output Discipline
-
-**CRITICAL**: Follow these output rules strictly:
-1. **Never ask questions**: Do not ask the user for clarification. If information is missing, note it in the `## Notes` section and proceed with your best judgment.
-2. **Strict output format**: Your entire response MUST conform to the Output Format above. Do not prepend or append preamble, commentary, or conversational text outside the format.
-3. **Notes section**: If you have observations, caveats, or supplementary remarks that don't fit the defined sections, append them in the `## Notes` section at the end of your output.
-
-## Privacy Note
-
-Ensure no sensitive information is included:
-- No absolute paths from `/` or `~`
-- No API keys or credentials
-- No personal data
