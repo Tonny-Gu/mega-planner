@@ -60,6 +60,16 @@ Review all five perspectives and fill in the **Step Matching** and **Topic Match
 - **Encouraged 3 options**: Conservative, Balanced, and Aggressive
 - **No upper limit**: As many distinct options as agent positions support
 
+## Input: Combined Report
+
+Below is the combined report containing all five perspectives:
+
+---
+
+{{COMBINED_REPORT}}
+
+---
+
 ## Rules
 
 ### Rule 1: AI Recommendation is Advisory Only
