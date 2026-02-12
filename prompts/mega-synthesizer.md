@@ -39,18 +39,21 @@ Review all five perspectives and determine consensus using these criteria:
 
 ### Consensus Definition
 
-**CONSENSUS** is reached when ALL of the following are true:
-1. Bold and Paranoia propose the same general approach in their shared solutions (may differ in implementation details)
-2. Critique finds no critical blockers for that approach
-3. Both Reducers recommend BOTH proposals (not just one) without major modifications—i.e., changes are <30 lines AND <30% of total LOC
-4. **Neither proposer has unresolved Topics** — i.e., no Topics exist at all
+**Consensus is evaluated at per-step granularity.** Each implementation step is independently classified as CONSENSUS or DISAGREEMENT. A plan may contain a mix of consensus steps and disagreement points.
 
-**DISAGREEMENT** = NOT CONSENSUS. If any condition above is not satisfied, disagreement exists.
+**A step is CONSENSUS** when ALL of the following are true:
+1. **BOTH** Bold and Paranoia propose the same general approach for that step in their shared solutions (may differ in implementation details). If only one proposer includes a step, it is NOT consensus—both must independently propose it.
+2. Critique finds no critical blockers for that step
+3. Both Reducers endorse BOTH proposals' version of that step (not just one) without major modifications—i.e., changes are <30 lines AND <30% of total LOC
+4. **Neither proposer has unresolved Topics for that step** — if a Topic exists related to this step, it is automatically a disagreement point
+
+**DISAGREEMENT** = NOT CONSENSUS. If any condition above is not satisfied for a given step, that step is a disagreement point.
 
 **Guidance:**
 - When criteria are ambiguous or unclear, DO NOT make a judgment—treat it as DISAGREEMENT
 - Partial consensus is still DISAGREEMENT (e.g., if Reducers only endorse one proposal, or make significant simplifications)
-- **Proposer Topics are inherently DISAGREEMENT** — all variants must be presented as options for the developer to decide; critique/reducer data is annotation, not a filter
+- **Every unresolved Topic is a Disagreement** — each Topic with variants MUST become its own Disagreement section; all variants must be presented as options for the developer to decide; critique/reducer data is annotation, not a filter
+- **A step proposed by only one proposer is NOT consensus** — both Bold and Paranoia must independently arrive at the same approach for it to qualify as consensus
 
 **IMPORTANT: Check for "Selection History" section first!**
 
@@ -172,6 +175,8 @@ Use this format for ALL outputs (consensus or disagreement):
 ## Table of Contents
 
 - [Agent Perspectives Summary](#agent-perspectives-summary)
+- [Step Matching](#step-matching)
+- [Topic Matching](#topic-matching)
 - [Consensus Status](#consensus-status)
 - [Goal](#goal)
 - [Codebase Analysis](#codebase-analysis)
@@ -195,10 +200,48 @@ Use this format for ALL outputs (consensus or disagreement):
 | **Proposal Reducer** | [Simplification direction] | [What complexity was removed] |
 | **Code Reducer** | [Code impact assessment] | [LOC delta summary] |
 
+<a name="step-matching"></a>
+## Step Matching
+
+> Cross-reference shared solution steps from both proposers with critique/reducer findings.
+> Every step from every proposer's shared solution MUST appear as a row. Do NOT omit any step.
+
+| # | Bold | Paranoia | Critique | Proposal Reducer | Code Reducer | Destination |
+|---|------|----------|----------|------------------|--------------|-------------|
+| 1 | [Step description] | [Same/similar step description] | [Verdict, or empty if no opinion] | [Simplification, or empty if <30 LOC and <30% change] | [LOC impact, or empty if no concern] | → Step 1 |
+| 2 | [Step description] | — | — | — | — | → Disagreement 1 |
+| 3 | — | [Step description] | [Verdict] | — | — | → Disagreement 2 |
+
+**Column rules:**
+- **Bold / Paranoia**: The step as described in that proposer's shared solution. Leave `—` if only the other proposer proposed this step.
+- **Critique**: Feasibility verdict for this step. Leave empty if no critical blockers or concerns.
+- **Proposal Reducer / Code Reducer**: Noted only when the reducer recommends major modifications (≥30 lines OR ≥30% of step LOC). Leave empty otherwise.
+- **Destination**: Where this step ends up in the synthesized plan:
+  - `→ Step N` — consensus step (BOTH proposers proposed it, no critical issues)
+  - `→ Disagreement N` — disagreement point (only one proposer proposed it, OR critique/reducer flagged major issues)
+
+**A step with `—` in either Bold or Paranoia column is automatically `→ Disagreement`.**
+
+<a name="topic-matching"></a>
+## Topic Matching
+
+> Cross-reference variant Topics from both proposers with critique/reducer findings.
+> Every Topic from every proposer MUST appear as a row. Destination is ALWAYS a Disagreement.
+
+| # | Bold | Paranoia | Critique | Proposal Reducer | Code Reducer | Destination |
+|---|------|----------|----------|------------------|--------------|-------------|
+| 1 | Topic: [Name], Variants: A, B | Topic: [Name], Variants: A, B | [Per-variant verdicts, or empty] | [Simplification, or empty] | [LOC data, or empty] | → Disagreement 3 |
+| 2 | Topic: [Name], Variants: A, B | — | [Per-variant verdicts] | — | — | → Disagreement 4 |
+
+**Column rules:**
+- **Bold / Paranoia**: The Topic name and its Variants as identified by that proposer. Leave `—` if only the other proposer identified this Topic.
+- **Critique / Proposal Reducer / Code Reducer**: Per-variant analysis. Leave empty if no opinion or no significant concern.
+- **Destination**: **Always `→ Disagreement N`** — every Topic is a disagreement point, regardless of how many variants survive or whether only one proposer raised it.
+
 <a name="consensus-status"></a>
 ## Consensus Status
 
-[One paragraph explaining the consensus determination, citing key evidence from agents' positions.]
+[One paragraph explaining the consensus determination, citing the Step Matching and Topic Matching tables as evidence.]
 
 <a name="goal"></a>
 ## Goal
