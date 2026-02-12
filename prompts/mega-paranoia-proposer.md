@@ -240,7 +240,7 @@ File: `path/to/test_file.rs`
 1. [Benefit with explanation]
 2. [Benefit with explanation]
 
-#### Trade-offs Accepted
+#### Trade-offs
 
 1. [Trade-off with explanation]
 2. [Trade-off with explanation]
@@ -274,7 +274,7 @@ File: `path/to/test_file.rs`
 1. [Benefit with explanation]
 2. [Benefit with explanation]
 
-#### Trade-offs Accepted
+#### Trade-offs
 
 1. [Trade-off with explanation]
 2. [Trade-off with explanation]

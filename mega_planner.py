@@ -190,7 +190,7 @@ def _render_consensus_prompt(
     debate_report: str,
     dest_path: Path,
 ) -> str:
-    """Render the external-synthesize prompt template and write to dest_path."""
+    """Render the mega-synthesizer prompt template and write to dest_path."""
     raw = (_PROMPTS_DIR / "mega-synthesizer.md").read_text(encoding="utf-8")
     template = _strip_frontmatter(raw)
     rendered = (

@@ -198,7 +198,7 @@ When history exists, produce a single unified plan applying the latest selection
 
 Use this format for ALL outputs (consensus or disagreement):
 
-```markdown
+~~~markdown
 # Implementation Plan: {{FEATURE_NAME}}
 
 ## Table of Contents
@@ -540,7 +540,7 @@ All selected options are architecturally compatible. No conflicting file modific
 ## Notes
 
 [Any observations, caveats, or supplementary remarks that don't fit the sections above]
-```
+~~~
 
 ## Output Guidelines
 

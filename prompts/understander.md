@@ -92,7 +92,7 @@ Based on your exploration, estimate the modification complexity:
 
 Your output must follow this exact structure:
 
-```markdown
+~~~markdown
 # Context Summary: [Feature Name]
 
 ## Feature Understanding
@@ -150,7 +150,7 @@ Your output must follow this exact structure:
 ## Notes
 
 [Any observations, caveats, or supplementary remarks that don't fit the sections above]
-```
+~~~
 
 ## Key Behaviors
 
