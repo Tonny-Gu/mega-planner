@@ -68,7 +68,7 @@ prompts/                 # Agent prompt templates (markdown)
   mega-proposal-critique.md
   mega-proposal-reducer.md
   mega-code-reducer.md
-  external-synthesize-prompt.md
+  mega-synthesizer.md
 tests/
   test_pipeline.py       # Pipeline tests with stub runner (no LLM calls)
 docs/

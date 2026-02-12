@@ -58,10 +58,10 @@ DEFAULT_BACKENDS = {
 STAGE_TOOLS = {
     "understander": "Read,Grep,Glob",
     "bold": "Read,Grep,Glob,WebSearch,WebFetch",
-    "paranoia": "Read,Grep,Glob",
-    "critique": "Read,Grep,Glob,Bash",
-    "proposal-reducer": "Read,Grep,Glob",
-    "code-reducer": "Read,Grep,Glob",
+    "paranoia": "Read,Grep,Glob,WebSearch,WebFetch",
+    "critique": "Read,Grep,Glob,WebSearch,WebFetch",
+    "proposal-reducer": "Read,Grep,Glob,WebSearch,WebFetch",
+    "code-reducer": "Read,Grep,Glob,WebSearch,WebFetch",
     "consensus": "Read,Grep,Glob",
 }
 
@@ -190,8 +190,8 @@ def _render_consensus_prompt(
     debate_report: str,
     dest_path: Path,
 ) -> str:
-    """Render the external-synthesize prompt template and write to dest_path."""
-    raw = (_PROMPTS_DIR / "external-synthesize-prompt.md").read_text(encoding="utf-8")
+    """Render the mega-synthesizer prompt template and write to dest_path."""
+    raw = (_PROMPTS_DIR / "mega-synthesizer.md").read_text(encoding="utf-8")
     template = _strip_frontmatter(raw)
     rendered = (
         template.replace("{{FEATURE_NAME}}", feature_name)
