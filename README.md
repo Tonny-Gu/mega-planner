@@ -1,6 +1,6 @@
 # Mega-Planner
 
-7-stage multi-agent debate pipeline for implementation planning. Two opposing proposers (bold + paranoia) generate competing approaches, three reviewers (critique, proposal reducer, code reducer) analyze them in parallel, and a final consensus stage synthesizes everything into a single implementation plan.
+7-stage multi-agent debate pipeline for implementation planning. Two opposing proposers (bold + paranoia) generate competing approaches, three reviewers (critique, proposal reducer, code reducer) analyze them in parallel, and a final synthesizer stage merges everything into a single implementation plan.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ python mega_planner.py "Add dark mode support"
 # Plan for an existing issue with a custom description (overrides issue body)
 python mega_planner.py --override 42 "Custom feature description"
 
-# Resolve disagreements in a previous debate (re-runs consensus only)
+# Resolve disagreements in a previous debate (re-runs synthesizer only)
 python mega_planner.py -r 42 "1B,2A"
 
 # Local-only mode (no GitHub issue creation)
@@ -28,7 +28,7 @@ python mega_planner.py --local "Plan without GitHub issues"
 | Flag | Description |
 |------|-------------|
 | `--override` | Plan for an existing issue number, using positional args as feature description |
-| `-r`, `--resolve` | Re-run consensus for an existing debate, applying new selections |
+| `-r`, `--resolve` | Re-run synthesizer for an existing debate, applying new selections |
 | `--local` | Skip GitHub issue creation/update |
 | `--output-dir` | Artifact output directory (default: `.tmp`) |
 | `--prefix` | Custom artifact filename prefix |
@@ -44,7 +44,7 @@ Tier 2:  [Bold] + [Paranoia]        (parallel)
               |
 Tier 3:  [Critique] + [Proposal Reducer] + [Code Reducer]  (parallel)
               |
-Tier 4:  [Consensus]
+Tier 4:  [Synthesizer]
 ```
 
 | Stage | Model | Description |
@@ -55,7 +55,7 @@ Tier 4:  [Consensus]
 | Critique | Opus | Feasibility analysis validating assumptions of both proposals |
 | Proposal Reducer | Opus | Simplifies both proposals following "less is more" philosophy |
 | Code Reducer | Opus | Analyzes code footprint to limit unreasonable growth |
-| Consensus | Opus | Synthesizes all 5 perspectives into a final implementation plan |
+| Synthesizer | Opus | Synthesizes all 5 perspectives into a final implementation plan |
 
 ## Project Structure
 
@@ -88,7 +88,7 @@ Each run produces intermediate files in the output directory (`.tmp/` by default
 {prefix}-proposal-reducer-input.md / output.md
 {prefix}-code-reducer-input.md / output.md
 {prefix}-debate.md              # Combined 5-agent debate report
-{prefix}-consensus-input.md / output.md   # Final plan
+{prefix}-synthesizer-input.md / output.md  # Final plan
 ```
 
 When using `--override` or default mode, the prefix is `issue-{N}`. In local mode without `--prefix`, it defaults to a timestamp.

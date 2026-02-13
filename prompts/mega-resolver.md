@@ -19,7 +19,7 @@ Five specialized agents previously analyzed the following requirement. The synth
 
 1. **Parse selections**: The user selections use the format `1B,2A,...` where each token is `<disagreement-number><option-letter>`. Match each to the corresponding Disagreement section and Option in the previous plan.
 2. **Check compatibility**: Look for architectural conflicts between selected options (e.g., selecting both "create new file" and "modify existing file" for the same component). Report the result in the Option Compatibility Check section.
-3. **Apply selections**: Merge the selected approaches into the previous consensus plan. Produce a single unified plan — no Disagreement sections, no Options. Combine the Synthesized Steps from the previous plan with the Option Steps from selected options into a single flat list of Synthesized Steps. Skip Disagreement Summary sections.
+3. **Apply selections**: Merge the selected approaches into the previous synthesized plan. Produce a single unified plan — no Disagreement sections, no Options. Combine the Synthesized Steps from the previous plan with the Option Steps from selected options into a single flat list of Synthesized Steps. Skip Disagreement Summary sections.
 4. **Fill Selection History**: Record which option was selected for each disagreement point in the Selection History table.
 
 ## Output Format
@@ -45,7 +45,7 @@ Five specialized agents previously analyzed the following requirement. The synth
 <a name="agent-perspectives-summary"></a>
 ## Agent Perspectives Summary
 
-<!-- RULE: Carry over the Agent Perspectives Summary, Step Matching table, and Topic Matching table from the previous consensus plan unchanged. -->
+<!-- RULE: Carry over the Agent Perspectives Summary, Step Matching table, and Topic Matching table from the previous synthesized plan unchanged. -->
 
 | Agent | Core Position | Key Insight |
 |-------|---------------|-------------|
@@ -85,8 +85,7 @@ Five specialized agents previously analyzed the following requirement. The synth
 <a name="synthesized-steps"></a>
 ## Synthesized Steps
 
-<!-- RULE: Merge the previous plan's Synthesized Steps with the Option Steps from selected options into a single flat list.
-MANDATORY: Design-first TDD ordering: Steps MUST follow Documentation → Tests → Implementation (never invert). Every plan MUST include at least one test step with a code draft. -->
+<!-- RULE: Merge the previous plan's Synthesized Steps with the Option Steps from selected options into a single flat list. -->
 
 **Synthesized Step 1: [Description]**
 - File: `path/to/file`
