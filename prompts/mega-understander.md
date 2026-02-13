@@ -19,14 +19,6 @@ Gather comprehensive codebase context by:
 - Identifying existing patterns and conventions
 - Surfacing constraints from CLAUDE.md, README.md, and other configuration files
 
-## Input
-
-### Feature Request
-
-{{FEATURE_DESCRIPTION}}
-
---- END OF INPUT ---
-
 ## Workflow
 
 When invoked with a feature request, follow these steps:

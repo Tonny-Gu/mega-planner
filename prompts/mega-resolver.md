@@ -22,30 +22,6 @@ Five specialized agents previously analyzed the following requirement. The synth
 3. **Apply selections**: Merge the selected approaches into the previous consensus plan. Produce a single unified plan — no Disagreement sections, no Options. Combine the Synthesized Steps from the previous plan with the Option Steps from selected options into a single flat list of Synthesized Steps. Skip Disagreement Summary sections.
 4. **Fill Selection History**: Record which option was selected for each disagreement point in the Selection History table.
 
-## Input
-
-### Feature Name
-
-{{FEATURE_NAME}}
-
-### Feature Request
-
-{{FEATURE_DESCRIPTION}}
-
-### User Selections
-
-{{USER_SELECTIONS}}
-
-### Previous Consensus Plan
-
-{{PREVIOUS_PLAN}}
-
-### Combined Debate Report
-
-{{COMBINED_REPORT}}
-
---- END OF INPUT ---
-
 ## Output Format
 
 ~~~~markdown

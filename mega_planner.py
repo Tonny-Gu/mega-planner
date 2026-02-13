@@ -25,7 +25,7 @@ from typing import Callable
 
 from agentize.workflow.api import run_acw
 from agentize.workflow.api import gh as gh_utils
-from agentize.workflow.api.session import Session, StageResult
+from agentize.workflow.api.session import PipelineError, Session, StageResult
 
 __version__ = "0.1.0"
 
@@ -34,6 +34,7 @@ __version__ = "0.1.0"
 # ============================================================
 
 _FRONTMATTER_RE = re.compile(r"^---\s*\n.*?\n---\s*\n", re.DOTALL)
+_MD_HEADING_RE = re.compile(r"^#", re.MULTILINE)
 
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
@@ -78,6 +79,23 @@ STAGE_PERMISSION_MODE = {}
 # ============================================================
 
 
+def _strip_preamble(text: str, stage: str) -> str:
+    """Strip any text before the first markdown ``#`` heading.
+
+    LLM agents sometimes emit conversational preamble (e.g.
+    "Now I have sufficient context…") before the structured output.
+    This helper trims that noise so downstream templates receive
+    clean markdown starting at the first heading.
+
+    Raises ``PipelineError`` if no heading is found – this indicates
+    the agent produced entirely malformed output.
+    """
+    m = _MD_HEADING_RE.search(text)
+    if m is None:
+        raise PipelineError(stage, 1, "agent output contains no markdown heading")
+    return text[m.start():]
+
+
 def _strip_frontmatter(content: str) -> str:
     """Remove YAML frontmatter from markdown content."""
     return _FRONTMATTER_RE.sub("", content, count=1)
@@ -90,12 +108,29 @@ def _read_agent_prompt(stage: str) -> str:
     return _strip_frontmatter(raw)
 
 
-def _render_template(stage: str, replacements: dict[str, str]) -> str:
-    """Read an agent prompt template and apply {{PLACEHOLDER}} replacements."""
-    result = _read_agent_prompt(stage)
-    for key, value in replacements.items():
-        result = result.replace(f"{{{{{key}}}}}", value)
-    return result
+def _write_system_prompt(stage: str, output_dir: Path, prefix: str) -> str:
+    """Write the agent prompt (instructions only) as a system-prompt file.
+
+    Returns the file path as a string for use with ``--system-prompt-file``.
+    """
+    content = _read_agent_prompt(stage)
+    path = output_dir / f"{prefix}-{stage}-system.md"
+    path.write_text(content, encoding="utf-8")
+    return str(path)
+
+
+def _build_user_prompt(fields: dict[str, str]) -> str:
+    """Build a plain-text user prompt from labelled data fields."""
+    parts = []
+    for label, value in fields.items():
+        parts.append(f"{label}:\n{value}")
+    return "\n\n".join(parts)
+
+
+def _system_flags(stage: str, output_dir: Path, prefix: str) -> list[str]:
+    """Return extra CLI flags that inject the agent prompt as system prompt."""
+    path = _write_system_prompt(stage, output_dir, prefix)
+    return ["--system-prompt-file", path]
 
 
 def _build_debate_report(
@@ -234,46 +269,41 @@ def run_mega_pipeline(
         results["understander"] = _skip_result("understander")
     else:
         _log(f"Stage 1/7: Running understander ({_backend_label('understander')})")
-        understander_prompt = _render_template("understander", {
-            "FEATURE_DESCRIPTION": feature_desc,
-        })
         results["understander"] = session.run_prompt(
             "understander",
-            understander_prompt,
+            _build_user_prompt({"Feature Request": feature_desc}),
             stage_backends["understander"],
             tools=STAGE_TOOLS.get("understander"),
             permission_mode=STAGE_PERMISSION_MODE.get("understander"),
+            extra_flags=_system_flags("understander", output_path, prefix),
         )
-    understander_output = results["understander"].text()
+    understander_output = _strip_preamble(results["understander"].text(), "understander")
 
     # --- Tier 2: Bold + Paranoia in parallel ---
     _log(
         f"Stage 2-3/7: Running bold + paranoia in parallel "
         f"({_backend_label('bold')}, {_backend_label('paranoia')})"
     )
-    bold_prompt = _render_template("bold", {
-        "FEATURE_DESCRIPTION": feature_desc,
-        "UNDERSTANDER_OUTPUT": understander_output,
-    })
-    paranoia_prompt = _render_template("paranoia", {
-        "FEATURE_DESCRIPTION": feature_desc,
-        "UNDERSTANDER_OUTPUT": understander_output,
+    proposer_user = _build_user_prompt({
+        "Feature Request": feature_desc,
+        "Understander Context": understander_output,
     })
 
     tier2_to_run = []
-    for name, prompt in [("bold", bold_prompt), ("paranoia", paranoia_prompt)]:
+    for name in ["bold", "paranoia"]:
         if _should_skip(name):
             results[name] = _skip_result(name)
         else:
             tier2_to_run.append(
-                session.stage(name, prompt, stage_backends[name],
+                session.stage(name, proposer_user, stage_backends[name],
                               tools=STAGE_TOOLS.get(name),
-                              permission_mode=STAGE_PERMISSION_MODE.get(name))
+                              permission_mode=STAGE_PERMISSION_MODE.get(name),
+                              extra_flags=_system_flags(name, output_path, prefix))
             )
     if tier2_to_run:
         results.update(session.run_parallel(tier2_to_run, max_workers=len(tier2_to_run)))
-    bold_output = results["bold"].text()
-    paranoia_output = results["paranoia"].text()
+    bold_output = _strip_preamble(results["bold"].text(), "bold")
+    paranoia_output = _strip_preamble(results["paranoia"].text(), "paranoia")
 
     # --- Tier 3: Critique + Proposal Reducer + Code Reducer in parallel ---
     _log(
@@ -281,35 +311,28 @@ def run_mega_pipeline(
         f"({_backend_label('critique')}, {_backend_label('proposal-reducer')}, "
         f"{_backend_label('code-reducer')})"
     )
-    dual_replacements = {
-        "FEATURE_DESCRIPTION": feature_desc,
-        "BOLD_PROPOSAL": bold_output,
-        "PARANOIA_PROPOSAL": paranoia_output,
-    }
-    critique_prompt = _render_template("critique", dual_replacements)
-    proposal_reducer_prompt = _render_template("proposal-reducer", dual_replacements)
-    code_reducer_prompt = _render_template("code-reducer", dual_replacements)
+    dual_user = _build_user_prompt({
+        "Feature Request": feature_desc,
+        "Bold Proposal": bold_output,
+        "Paranoia Proposal": paranoia_output,
+    })
 
-    tier3_stages = [
-        ("critique", critique_prompt),
-        ("proposal-reducer", proposal_reducer_prompt),
-        ("code-reducer", code_reducer_prompt),
-    ]
     tier3_to_run = []
-    for name, prompt in tier3_stages:
+    for name in ["critique", "proposal-reducer", "code-reducer"]:
         if _should_skip(name):
             results[name] = _skip_result(name)
         else:
             tier3_to_run.append(
-                session.stage(name, prompt, stage_backends[name],
+                session.stage(name, dual_user, stage_backends[name],
                               tools=STAGE_TOOLS.get(name),
-                              permission_mode=STAGE_PERMISSION_MODE.get(name))
+                              permission_mode=STAGE_PERMISSION_MODE.get(name),
+                              extra_flags=_system_flags(name, output_path, prefix))
             )
     if tier3_to_run:
         results.update(session.run_parallel(tier3_to_run, max_workers=len(tier3_to_run)))
-    critique_output = results["critique"].text()
-    proposal_reducer_output = results["proposal-reducer"].text()
-    code_reducer_output = results["code-reducer"].text()
+    critique_output = _strip_preamble(results["critique"].text(), "critique")
+    proposal_reducer_output = _strip_preamble(results["proposal-reducer"].text(), "proposal-reducer")
+    code_reducer_output = _strip_preamble(results["code-reducer"].text(), "code-reducer")
 
     # --- Tier 4: Synthesizer ---
     if _should_skip("synthesizer"):
@@ -326,22 +349,20 @@ def run_mega_pipeline(
         debate_file = output_path / f"{prefix}-debate.md"
         debate_file.write_text(debate_report)
 
-        def _write_synthesizer_prompt(path: Path) -> str:
-            rendered = _render_template("synthesizer", {
-                "FEATURE_NAME": feature_name,
-                "FEATURE_DESCRIPTION": feature_desc,
-                "COMBINED_REPORT": debate_report,
-            })
-            path.write_text(rendered, encoding="utf-8")
-            return rendered
+        synthesizer_user = _build_user_prompt({
+            "Feature Name": feature_name,
+            "Feature Request": feature_desc,
+            "Combined Report": debate_report,
+        })
 
         _log(f"Stage 7/7: Running synthesizer ({_backend_label('synthesizer')})")
         results["synthesizer"] = session.run_prompt(
             "synthesizer",
-            _write_synthesizer_prompt,
+            synthesizer_user,
             stage_backends["synthesizer"],
             tools=STAGE_TOOLS.get("synthesizer"),
             permission_mode=STAGE_PERMISSION_MODE.get("synthesizer"),
+            extra_flags=_system_flags("synthesizer", output_path, prefix),
         )
 
     return results
@@ -402,25 +423,23 @@ def run_resolve_pipeline(
 
     prev_plan = synthesizer_path.read_text()
 
-    def _write_resolver_prompt(path: Path) -> str:
-        rendered = _render_template("resolver", {
-            "FEATURE_NAME": feature_name,
-            "FEATURE_DESCRIPTION": feature_desc,
-            "USER_SELECTIONS": selections,
-            "PREVIOUS_PLAN": prev_plan,
-            "COMBINED_REPORT": debate_report,
-        })
-        path.write_text(rendered, encoding="utf-8")
-        return rendered
+    resolver_user = _build_user_prompt({
+        "Feature Name": feature_name,
+        "Feature Request": feature_desc,
+        "User Selections": selections,
+        "Previous Consensus Plan": prev_plan,
+        "Combined Debate Report": debate_report,
+    })
 
     p, m = stage_backends["resolver"]
     _log(f"Running resolver ({p}:{m})")
     result = session.run_prompt(
         "resolver",
-        _write_resolver_prompt,
+        resolver_user,
         stage_backends["resolver"],
         tools=STAGE_TOOLS.get("resolver"),
         permission_mode=STAGE_PERMISSION_MODE.get("resolver"),
+        extra_flags=_system_flags("resolver", output_path, prefix),
     )
 
     return {"resolver": result}
@@ -585,6 +604,10 @@ def main(argv: list[str] | None = None) -> int:
         issue_url = gh_utils.issue_url(issue_number)
         prefix = f"issue-{issue_number}"
         feature_desc = positional
+        # Clean previous artifacts so the pipeline starts fresh
+        for stale in output_dir.glob(f"{prefix}-*.md"):
+            stale.unlink()
+            _log(f"Removed stale artifact: {stale.name}")
 
     # --- Default mode ---
     else:

@@ -22,6 +22,14 @@ Simplify BOTH proposals by:
 - Reducing scope to essentials
 - Comparing complexity levels between proposals
 
+## Input Structure
+
+Each proposal you receive may contain:
+- **Proposed Solution** — shared, unambiguous parts (single-path)
+- **Topic sections** — points where the proposer identified ambiguities or alternative approaches, each with multiple Variants
+
+Simplify BOTH proposals — shared solutions AND each Topic Variant — and compare their complexity.
+
 ## Philosophy: Less is More
 
 **Core principles:**
@@ -30,28 +38,6 @@ Simplify BOTH proposals by:
 - Prefer simple code over clever code
 - Three similar lines > one premature abstraction
 - Only add complexity when clearly justified
-
-## Input
-
-### Feature Request
-
-{{FEATURE_DESCRIPTION}}
-
-### Bold Proposal
-
-{{BOLD_PROPOSAL}}
-
-### Paranoia Proposal
-
-{{PARANOIA_PROPOSAL}}
-
-Each proposal may contain:
-- **Proposed Solution** — shared, unambiguous parts (single-path)
-- **Topic sections** — points where the proposer identified ambiguities or alternative approaches, each with multiple Variants
-
-Your job: Simplify BOTH proposals — shared solutions AND each Topic Variant — and compare their complexity.
-
---- END OF INPUT ---
 
 ## Workflow
 
@@ -414,4 +400,3 @@ Keep complexity when it's truly justified:
 - "Might need it someday"
 - "It's a best practice"
 - "Makes it more flexible"
-

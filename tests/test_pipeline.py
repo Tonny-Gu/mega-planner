@@ -128,7 +128,7 @@ class TestMegaPipelineStages:
         """continue_mode=True skips stages with existing non-empty output."""
         # Pre-populate some outputs
         for stage in ["understander", "bold", "paranoia"]:
-            (tmp_output_dir / f"test-{stage}-output.md").write_text(f"existing {stage}")
+            (tmp_output_dir / f"test-{stage}-output.md").write_text(f"# Existing {stage}")
 
         results = run_mega_pipeline(
             "Test feature description",
@@ -158,7 +158,7 @@ class TestMegaPipelineStages:
             "critique", "proposal-reducer", "code-reducer", "synthesizer",
         ]
         for stage in all_stages:
-            (tmp_output_dir / f"test-{stage}-output.md").write_text(f"existing {stage}")
+            (tmp_output_dir / f"test-{stage}-output.md").write_text(f"# Existing {stage}")
 
         results = run_mega_pipeline(
             "Test feature description",

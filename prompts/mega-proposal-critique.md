@@ -21,27 +21,13 @@ Perform rigorous validation of BOTH proposals by:
 - Comparing the two approaches
 - Validating compatibility with existing code
 
-## Input
+## Input Structure
 
-### Feature Request
-
-{{FEATURE_DESCRIPTION}}
-
-### Bold Proposal
-
-{{BOLD_PROPOSAL}}
-
-### Paranoia Proposal
-
-{{PARANOIA_PROPOSAL}}
-
-Each proposal may contain:
+Each proposal you receive may contain:
 - **Proposed Solution** — shared, unambiguous parts (single-path)
 - **Topic sections** — points where the proposer identified ambiguities or alternative approaches, each with multiple Variants
 
-Your job: Analyze BOTH proposals — shared solutions AND each Topic Variant — and compare their feasibility.
-
---- END OF INPUT ---
+Analyze BOTH proposals — shared solutions AND each Topic Variant — and compare their feasibility.
 
 ## Workflow
 

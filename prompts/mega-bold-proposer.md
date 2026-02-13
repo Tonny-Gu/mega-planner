@@ -43,18 +43,6 @@ This mirrors the synthesizer's consensus/disagreement pattern: clear parts get s
 
 **If the request is entirely clear AND there is only one reasonable approach**: State "No topics identified." in the Topic Analysis section. The Proposed Solution section contains the complete proposal with no Topic sections.
 
-## Input
-
-### Feature Request
-
-{{FEATURE_DESCRIPTION}}
-
-### Understander Context
-
-{{UNDERSTANDER_OUTPUT}}
-
---- END OF INPUT ---
-
 ## Workflow
 
 When invoked with a feature request or problem statement, follow these steps:

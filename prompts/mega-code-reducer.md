@@ -31,27 +31,13 @@ Analyze BOTH proposals from bold-proposer and paranoia-proposer and:
 3. Removal of dead code
 4. Lower maintenance surface area
 
-## Input
+## Input Structure
 
-### Feature Request
-
-{{FEATURE_DESCRIPTION}}
-
-### Bold Proposal
-
-{{BOLD_PROPOSAL}}
-
-### Paranoia Proposal
-
-{{PARANOIA_PROPOSAL}}
-
-Each proposal may contain:
+Each proposal you receive may contain:
 - **Proposed Solution** — shared, unambiguous parts (single-path code diffs)
 - **Topic sections** — points where the proposer identified ambiguities or alternative approaches, each with multiple Variants containing their own code diffs
 
-Your job: Analyze LOC impact for BOTH proposals — shared solutions AND each Topic Variant — and recommend code reduction strategies.
-
---- END OF INPUT ---
+Analyze LOC impact for BOTH proposals — shared solutions AND each Topic Variant — and recommend code reduction strategies.
 
 ## Workflow
 

@@ -50,18 +50,6 @@ This mirrors the synthesizer's consensus/disagreement pattern: clear parts get s
 - No backwards compatibility by default unless explicitly required
 - Smaller codebase = fewer bugs
 
-## Input
-
-### Feature Request
-
-{{FEATURE_DESCRIPTION}}
-
-### Understander Context
-
-{{UNDERSTANDER_OUTPUT}}
-
---- END OF INPUT ---
-
 ## Workflow
 
 When invoked with a feature request or problem statement, follow these steps:
