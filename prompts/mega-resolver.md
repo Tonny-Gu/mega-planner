@@ -45,7 +45,7 @@ Five specialized agents previously analyzed the following requirement. The synth
 <a name="agent-perspectives-summary"></a>
 ## Agent Perspectives Summary
 
-> Carry over the Agent Perspectives Summary, Step Matching table, and Topic Matching table from the previous consensus plan unchanged.
+<!-- RULE: Carry over the Agent Perspectives Summary, Step Matching table, and Topic Matching table from the previous consensus plan unchanged. -->
 
 | Agent | Core Position | Key Insight |
 |-------|---------------|-------------|
@@ -85,9 +85,8 @@ Five specialized agents previously analyzed the following requirement. The synth
 <a name="synthesized-steps"></a>
 ## Synthesized Steps
 
-> Merge the previous plan's Synthesized Steps with the Option Steps from selected options into a single flat list.
->
-> **MANDATORY: Design-first TDD ordering**: Steps MUST follow Documentation → Tests → Implementation (never invert). Every plan MUST include at least one test step with a code draft.
+<!-- RULE: Merge the previous plan's Synthesized Steps with the Option Steps from selected options into a single flat list.
+MANDATORY: Design-first TDD ordering: Steps MUST follow Documentation → Tests → Implementation (never invert). Every plan MUST include at least one test step with a code draft. -->
 
 **Synthesized Step 1: [Description]**
 - File: `path/to/file`
@@ -143,11 +142,13 @@ All selected options are architecturally compatible. No conflicting file modific
 <a name="selection-history"></a>
 ## Selection History
 
-**Row Granularity**: Each row represents ONE disagreement point, not one resolve command.
+<!-- RULE: Row Granularity: Each row represents ONE disagreement point, not one resolve command. -->
 
 | Timestamp | Disagreement | Options Summary | Selected Option | User Comments |
 |-----------|--------------|-----------------|-----------------|---------------|
 | 2026-01-22 19:30 | 1: Agent Naming | 1A (Paranoia, **Recommended**): suffix; 1B (Bold): prefix | 1B (Bold) | Prefix matches existing |
+
+**AI Recommendation Overlap**: [N/M] — user agreed with AI recommendation on N out of M disagreements.
 
 ## Notes
 

@@ -112,8 +112,7 @@ Use this format for ALL outputs (consensus or disagreement):
 <details>
 <summary><b>Step Matching Table</b></summary>
 
-> Cross-reference shared solution steps from both proposers with critique/reducer findings.
-> Every step from every proposer's shared solution MUST appear as a row. Do NOT omit any step.
+<!-- RULE: Cross-reference shared solution steps from both proposers with critique/reducer findings. Every step from every proposer's shared solution MUST appear as a row. Do NOT omit any step. -->
 
 | # | Bold | Paranoia | Critique | Proposal Reducer | Code Reducer | Destination |
 |---|------|----------|----------|------------------|--------------|-------------|
@@ -121,20 +120,19 @@ Use this format for ALL outputs (consensus or disagreement):
 | 2 | [Step description] | — | [Agent's opinion] | [Agent's opinion] | [Agent's opinion] | → Disagreement 1 |
 | 3 | — | [Step description] | [Agent's opinion] | [Agent's opinion] | [Agent's opinion] | → Disagreement 2 |
 
-**Column rules:**
-- **Bold / Paranoia / Critique / Proposal Reducer / Code Reducer**: Each column records that agent's position on this step. Always fill in every agent's opinion — never leave a cell empty.
-- **Destination**: Only two possible values — `→ Synthesized Step N` or `→ Disagreement N`. Determination follows the rules below.
+<!-- RULE: Column rules:
+- Bold / Paranoia / Critique / Proposal Reducer / Code Reducer: Each column records that agent's position on this step. Always fill in every agent's opinion — never leave a cell empty.
+- Destination: Only two possible values — "→ Synthesized Step N" or "→ Disagreement N". Determination follows the rules below.
 
-**MANDATORY Destination rules — ZERO EXCEPTIONS, ZERO TOLERANCE:**
+MANDATORY Destination rules — ZERO EXCEPTIONS, ZERO TOLERANCE:
 
-A step may ONLY be assigned `→ Synthesized Step N` when ALL FOUR conditions are satisfied SIMULTANEOUSLY:
+A step may ONLY be assigned "→ Synthesized Step N" when ALL FOUR conditions are satisfied SIMULTANEOUSLY:
+1. Bold proposed it — the Bold column is NOT "—"
+2. Paranoia proposed it — the Paranoia column is NOT "—"
+3. Critique has NO critical blockers or concerns for this step
+4. NEITHER Proposal Reducer NOR Code Reducer recommends major modifications (≥30 lines OR ≥30% of step LOC)
 
-1. **Bold proposed it** — the Bold column is NOT `—`
-2. **Paranoia proposed it** — the Paranoia column is NOT `—`
-3. **Critique has NO critical blockers or concerns** for this step
-4. **NEITHER Proposal Reducer NOR Code Reducer recommends major modifications** (≥30 lines OR ≥30% of step LOC)
-
-If ANY ONE of these four conditions is violated — even one — the step MUST be `→ Disagreement N`. There is NO third option, NO exception, NO "close enough", NO judgment call. This is a mechanical binary test. Apply it literally.
+If ANY ONE of these four conditions is violated — even one — the step MUST be "→ Disagreement N". There is NO third option, NO exception, NO "close enough", NO judgment call. This is a mechanical binary test. Apply it literally. -->
 
 </details>
 
@@ -144,17 +142,16 @@ If ANY ONE of these four conditions is violated — even one — the step MUST b
 <details>
 <summary><b>Topic Matching Table</b></summary>
 
-> Cross-reference variant Topics from both proposers with critique/reducer findings.
-> Every Topic from every proposer MUST appear as a row.
+<!-- RULE: Cross-reference variant Topics from both proposers with critique/reducer findings. Every Topic from every proposer MUST appear as a row. -->
 
 | # | Bold | Paranoia | Critique | Proposal Reducer | Code Reducer | Destination |
 |---|------|----------|----------|------------------|--------------|-------------|
 | 1 | Topic: [Name], Variants: A, B | Topic: [Name], Variants: A, B | [Agent's opinion] | [Agent's opinion] | [Agent's opinion] | → Disagreement 3 |
 | 2 | Topic: [Name], Variants: A, B | — | [Agent's opinion] | [Agent's opinion] | [Agent's opinion] | → Disagreement 4 |
 
-**Column rules:**
-- **Bold / Paranoia / Critique / Proposal Reducer / Code Reducer**: Each column records that agent's position on this topic. Always fill in every agent's opinion — never leave a cell empty.
-- **Destination**: ONLY ONE possible value — `→ Disagreement N`. Topics MUST NEVER, under ANY circumstances, be assigned to a Synthesized Step. Every single Topic row is a Disagreement. No exceptions. No judgment calls. This is absolute and unconditional.
+<!-- RULE: Column rules:
+- Bold / Paranoia / Critique / Proposal Reducer / Code Reducer: Each column records that agent's position on this topic. Always fill in every agent's opinion — never leave a cell empty.
+- Destination: ONLY ONE possible value — "→ Disagreement N". Topics MUST NEVER, under ANY circumstances, be assigned to a Synthesized Step. Every single Topic row is a Disagreement. No exceptions. No judgment calls. This is absolute and unconditional. -->
 
 </details>
 
@@ -178,9 +175,8 @@ If ANY ONE of these four conditions is violated — even one — the step MUST b
 <a name="synthesized-steps"></a>
 ## Synthesized Steps
 
-> **Note**: Include only consensus steps here—steps that ALL agents agree on. All Topics with variants belong in their respective `## Disagreement N` sections as **Option Steps**.
->
-> **MANDATORY: Design-first TDD ordering**: Steps MUST follow Documentation → Tests → Implementation (never invert). Every plan MUST include at least one test step with a code draft.
+<!-- RULE: Include only consensus steps here—steps that ALL agents agree on. All Topics with variants belong in their respective Disagreement N sections as Option Steps.
+MANDATORY: Design-first TDD ordering: Steps MUST follow Documentation → Tests → Implementation (never invert). Every plan MUST include at least one test step with a code draft. -->
 
 **Synthesized Step 1: [Description]**
 - File: `path/to/file`
@@ -229,10 +225,10 @@ If ANY ONE of these four conditions is violated — even one — the step MUST b
 | 2 | [[Topic Name]](#disagreement-2-topic) | Cross-proposer conflict | A (Paranoia, **Recommended**): [summary]; B (Bold): [summary] | Option 2A |
 | 3 | [[Topic Name]](#disagreement-3-topic) | Proposer Topic (Alternative) | A (Bold 1A): [summary]; B (Bold 1B, **Recommended**): [summary]; C (Paranoia 1A): [summary] | Option 3B |
 
-> **Origin types:**
-> - `Proposer Topic (Ambiguity)` — user requirement was unclear; variants represent different interpretations
-> - `Proposer Topic (Alternative)` — requirement was clear; variants represent different implementation strategies
-> - `Cross-proposer conflict` — Bold and Paranoia shared solutions disagree on a point
+<!-- RULE: Origin types:
+- Proposer Topic (Ambiguity) — user requirement was unclear; variants represent different interpretations
+- Proposer Topic (Alternative) — requirement was clear; variants represent different implementation strategies
+- Cross-proposer conflict — Bold and Paranoia shared solutions disagree on a point -->
 
 ### Suggested Combination
 
@@ -246,6 +242,8 @@ If ANY ONE of these four conditions is violated — even one — the step MUST b
 
 <a name="disagreement-1-topic"></a>
 ## Disagreement 1: [Topic Name]
+
+> [2-3 sentence summary of what the disagreement is about, what the core tension is, and why it matters for the implementation]
 
 **Origin**: Proposer Topic (Ambiguity) / Proposer Topic (Alternative) / Cross-proposer conflict
 
@@ -261,11 +259,15 @@ If ANY ONE of these four conditions is violated — even one — the step MUST b
 
 ### Resolution Options
 
-| Option | Name | Source | Summary |
-|--------|------|--------|---------|
-| [1A](#option-1a-name-conservative) | [Name] | [Source: e.g., "Bold Variant 1A + Critique endorsement"] | [1-sentence summary] |
-| [1B](#option-1b-name-aggressive) | [Name] | [Source] | [1-sentence summary] |
-| [1C](#option-1c-name-balanced) | [Name] | [Source] | [1-sentence summary] |
+| Option | Name | Votes | Source | Summary |
+|--------|------|-------|--------|---------|
+| [1A](#option-1a-name-conservative) | [Name] | [N/5] | [Source: e.g., "Bold Variant 1A + Critique endorsement"] | [1-sentence summary] |
+| [1B](#option-1b-name-aggressive) | [Name] | [N/5] | [Source] | [1-sentence summary] |
+| [1C](#option-1c-name-balanced) | [Name] | [N/5] | [Source] | [1-sentence summary] |
+
+<!-- RULE: Votes: Count how many of the 5 agents (Bold, Paranoia, Critique, Proposal Reducer, Code Reducer) endorse or align with each option. An agent "votes" for an option if its position or recommendation supports that option's approach. -->
+
+**AI Recommendation**: Option [N][A/B/C/...] because [one-line rationale]
 
 ---
 
@@ -400,8 +402,6 @@ If ANY ONE of these four conditions is violated — even one — the step MUST b
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
 | [Risk] | H/M/L | H/M/L | [Strategy] |
-
-**AI Recommendation**: Option [N][A/B/C/...] because [one-line rationale]
 
 ---
 
