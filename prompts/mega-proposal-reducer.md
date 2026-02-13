@@ -151,8 +151,8 @@ For each proposal (shared solution + each variant), create a streamlined version
 
 ## Topic Alignment Check
 
-> Compare the Topics identified by each proposer. Note discrepancies and simplification opportunities.
-> If neither proposal contains Topics, write "Both proposals are single-path — no Topics identified." and skip all Topic sub-sections below.
+<!-- RULE: Compare the Topics identified by each proposer. Note discrepancies and simplification opportunities.
+If neither proposal contains Topics, write "Both proposals are single-path — no Topics identified." and skip all Topic sub-sections below. -->
 
 | Topic | Bold | Paranoia | Reducer Assessment |
 |-------|------|----------|--------------------|
@@ -183,7 +183,7 @@ For each proposal (shared solution + each variant), create a streamlined version
 
 ### Topic 1: [Topic Name]
 
-> Simplify each variant the Bold proposer offered for this topic.
+<!-- RULE: Simplify each variant the Bold proposer offered for this topic. -->
 
 #### Variant 1A: [Label]
 - **Unnecessary complexity**: [What to cut]
@@ -251,7 +251,7 @@ For each proposal (shared solution + each variant), create a streamlined version
 
 ### Per-Topic Comparison
 
-> For each Topic, compare simplified variants across proposers. Skip if no Topics exist.
+<!-- RULE: For each Topic, compare simplified variants across proposers. Skip if no Topics exist. -->
 
 #### Topic 1: [Topic Name]
 
@@ -261,7 +261,7 @@ For each proposal (shared solution + each variant), create a streamlined version
 | 1B: [Label] | Bold | ~[M] | [H/M/L] | Paranoia 1A (after simplification) |
 | 1A: [Label] | Paranoia | ~[N] | [H/M/L] | — |
 
-> **"Equivalent To"**: If two variants from different proposers become identical after simplification, note the equivalence — the synthesizer can merge them.
+<!-- RULE: "Equivalent To": If two variants from different proposers become identical after simplification, note the equivalence — the synthesizer can merge them. -->
 
 ## Red Flags Eliminated
 

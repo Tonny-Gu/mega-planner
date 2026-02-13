@@ -121,8 +121,8 @@ For Topics: recommend the most code-efficient Variant per Topic (may mix across 
 
 ## Topic Alignment Check
 
-> Compare the Topics identified by each proposer. Note LOC differences.
-> If neither proposal contains Topics, write "Both proposals are single-path — no Topics identified." and skip all Topic sub-sections below.
+<!-- RULE: Compare the Topics identified by each proposer. Note LOC differences.
+If neither proposal contains Topics, write "Both proposals are single-path — no Topics identified." and skip all Topic sub-sections below. -->
 
 | Topic | Bold Variants | Paranoia Variants | LOC Observation |
 |-------|---------------|-------------------|-----------------|
@@ -136,13 +136,13 @@ For Topics: recommend the most code-efficient Variant per Topic (may mix across 
 | Bold | +X | -Y | +T1 | -T2 | +/-Z |
 | Paranoia | +X | -Y | +T1 | -T2 | +/-Z |
 
-**Note**: Test LOC additions are expected and encouraged. Only flag test code as bloat if clearly redundant.
+<!-- RULE: Test LOC additions are expected and encouraged. Only flag test code as bloat if clearly redundant. -->
 
 **Current baseline**: X LOC in affected files
 
 ## Per-Topic LOC Impact
 
-> One sub-section per Topic. Skip if no Topics exist.
+<!-- RULE: One sub-section per Topic. Skip if no Topics exist. -->
 
 ### Topic 1: [Topic Name]
 
@@ -160,7 +160,7 @@ For Topics: recommend the most code-efficient Variant per Topic (may mix across 
 
 ## Total LOC Scenarios
 
-> Combine shared solution + one variant per topic to show best/worst case.
+<!-- RULE: Combine shared solution + one variant per topic to show best/worst case. -->
 
 | Scenario | Shared | Topic 1 | Topic 2 | Total Net Delta |
 |----------|--------|---------|---------|-----------------|

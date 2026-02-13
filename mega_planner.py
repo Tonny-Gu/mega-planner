@@ -33,7 +33,6 @@ __version__ = "0.1.0"
 # Constants
 # ============================================================
 
-_FRONTMATTER_RE = re.compile(r"^---\s*\n.*?\n---\s*\n", re.DOTALL)
 _MD_HEADING_RE = re.compile(r"^#", re.MULTILINE)
 
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
@@ -96,27 +95,9 @@ def _strip_preamble(text: str, stage: str) -> str:
     return text[m.start():]
 
 
-def _strip_frontmatter(content: str) -> str:
-    """Remove YAML frontmatter from markdown content."""
-    return _FRONTMATTER_RE.sub("", content, count=1)
-
-
-def _read_agent_prompt(stage: str) -> str:
-    """Read an agent prompt from the prompts directory."""
-    filename = AGENT_PROMPTS[stage]
-    raw = (_PROMPTS_DIR / filename).read_text(encoding="utf-8")
-    return _strip_frontmatter(raw)
-
-
-def _write_system_prompt(stage: str, output_dir: Path, prefix: str) -> str:
-    """Write the agent prompt (instructions only) as a system-prompt file.
-
-    Returns the file path as a string for use with ``--system-prompt-file``.
-    """
-    content = _read_agent_prompt(stage)
-    path = output_dir / f"{prefix}-{stage}-system.md"
-    path.write_text(content, encoding="utf-8")
-    return str(path)
+def _prompt_path(stage: str) -> str:
+    """Return the absolute path to the agent's prompt file."""
+    return str(_PROMPTS_DIR / AGENT_PROMPTS[stage])
 
 
 def _build_user_prompt(fields: dict[str, str]) -> str:
@@ -127,10 +108,9 @@ def _build_user_prompt(fields: dict[str, str]) -> str:
     return "\n\n".join(parts)
 
 
-def _system_flags(stage: str, output_dir: Path, prefix: str) -> list[str]:
+def _system_flags(stage: str) -> list[str]:
     """Return extra CLI flags that inject the agent prompt as system prompt."""
-    path = _write_system_prompt(stage, output_dir, prefix)
-    return ["--system-prompt-file", path]
+    return ["--system-prompt-file", _prompt_path(stage)]
 
 
 def _build_debate_report(
@@ -275,7 +255,7 @@ def run_mega_pipeline(
             stage_backends["understander"],
             tools=STAGE_TOOLS.get("understander"),
             permission_mode=STAGE_PERMISSION_MODE.get("understander"),
-            extra_flags=_system_flags("understander", output_path, prefix),
+            extra_flags=_system_flags("understander"),
         )
     understander_output = _strip_preamble(results["understander"].text(), "understander")
 
@@ -298,7 +278,7 @@ def run_mega_pipeline(
                 session.stage(name, proposer_user, stage_backends[name],
                               tools=STAGE_TOOLS.get(name),
                               permission_mode=STAGE_PERMISSION_MODE.get(name),
-                              extra_flags=_system_flags(name, output_path, prefix))
+                              extra_flags=_system_flags(name))
             )
     if tier2_to_run:
         results.update(session.run_parallel(tier2_to_run, max_workers=len(tier2_to_run)))
@@ -326,7 +306,7 @@ def run_mega_pipeline(
                 session.stage(name, dual_user, stage_backends[name],
                               tools=STAGE_TOOLS.get(name),
                               permission_mode=STAGE_PERMISSION_MODE.get(name),
-                              extra_flags=_system_flags(name, output_path, prefix))
+                              extra_flags=_system_flags(name))
             )
     if tier3_to_run:
         results.update(session.run_parallel(tier3_to_run, max_workers=len(tier3_to_run)))
@@ -362,7 +342,7 @@ def run_mega_pipeline(
             stage_backends["synthesizer"],
             tools=STAGE_TOOLS.get("synthesizer"),
             permission_mode=STAGE_PERMISSION_MODE.get("synthesizer"),
-            extra_flags=_system_flags("synthesizer", output_path, prefix),
+            extra_flags=_system_flags("synthesizer"),
         )
 
     return results
@@ -439,7 +419,7 @@ def run_resolve_pipeline(
         stage_backends["resolver"],
         tools=STAGE_TOOLS.get("resolver"),
         permission_mode=STAGE_PERMISSION_MODE.get("resolver"),
-        extra_flags=_system_flags("resolver", output_path, prefix),
+        extra_flags=_system_flags("resolver"),
     )
 
     return {"resolver": result}
@@ -592,8 +572,11 @@ def main(argv: list[str] | None = None) -> int:
     elif args.continue_issue:
         issue_number = args.continue_issue
         prefix = f"issue-{issue_number}"
-        feature_desc = gh_utils.issue_body(issue_number)
-        feature_desc = _strip_plan_footer(feature_desc)
+        if positional:
+            feature_desc = positional
+        else:
+            feature_desc = gh_utils.issue_body(issue_number)
+            feature_desc = _strip_plan_footer(feature_desc)
 
     # --- Override mode ---
     elif args.override:
@@ -654,6 +637,12 @@ def main(argv: list[str] | None = None) -> int:
 
     plan_result = results.get("resolver") or results.get("synthesizer")
     if plan_result:
+        stage_name = "resolver" if "resolver" in results else "synthesizer"
+        raw = plan_result.output_path.read_text()
+        cleaned = _strip_preamble(raw, stage_name)
+        if cleaned != raw:
+            plan_result.output_path.write_text(cleaned)
+
         commit_hash = _resolve_commit_hash()
         _append_plan_footer(plan_result.output_path, commit_hash)
 

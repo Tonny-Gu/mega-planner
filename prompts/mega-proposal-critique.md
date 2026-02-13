@@ -192,8 +192,8 @@ Your critique should be structured as:
 
 ## Topic Alignment Check
 
-> Compare the Topics identified by each proposer. Note discrepancies.
-> If neither proposal contains Topics, write "Both proposals are single-path — no Topics identified." and skip all Topic sub-sections below.
+<!-- RULE: Compare the Topics identified by each proposer. Note discrepancies.
+If neither proposal contains Topics, write "Both proposals are single-path — no Topics identified." and skip all Topic sub-sections below. -->
 
 | Topic | Bold | Paranoia | Alignment |
 |-------|------|----------|-----------|
@@ -250,7 +250,7 @@ Your critique should be structured as:
 
 ### Topic 1: [Topic Name]
 
-> Critique each variant the Bold proposer offered for this topic.
+<!-- RULE: Critique each variant the Bold proposer offered for this topic. -->
 
 #### Variant 1A: [Label]
 - **Feasibility**: High / Medium / Low
@@ -323,7 +323,7 @@ Your critique should be structured as:
 
 ### Per-Topic Comparison
 
-> For each Topic that appears in either or both proposals, compare the variants across proposers. Skip this section if no Topics exist.
+<!-- RULE: For each Topic that appears in either or both proposals, compare the variants across proposers. Skip this section if no Topics exist. -->
 
 #### Topic 1: [Topic Name]
 

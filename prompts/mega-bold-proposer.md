@@ -101,14 +101,14 @@ This section preserves the user's exact requirements so that critique and reduce
 
 ## Topic Analysis
 
-> If the user request is entirely clear AND there is only one reasonable approach, write "No topics identified." and skip the table. The Proposed Solution below is the complete proposal; no Topic sections follow.
+<!-- RULE: If the user request is entirely clear AND there is only one reasonable approach, write "No topics identified." and skip the table. The Proposed Solution below is the complete proposal; no Topic sections follow. -->
 
 | # | Topic | Type | Variant A | Variant B |
 |---|-------|------|-----------|-----------|
 | 1 | [What is unclear or has multiple approaches] | Ambiguity / Alternative | [Interpretation/Approach A] | [Interpretation/Approach B] |
 | 2 | [What is unclear or has multiple approaches] | Ambiguity / Alternative | [Interpretation/Approach A] | [Interpretation/Approach B] |
 
-> Add columns (C, D, ...) if a topic has more than two variants. Keep total variants per topic ≤ 4.
+<!-- RULE: Add columns (C, D, ...) if a topic has more than two variants. Keep total variants per topic ≤ 4. -->
 
 ## Research Findings
 
@@ -123,9 +123,8 @@ This section preserves the user's exact requirements so that critique and reduce
 
 ## Proposed Solution
 
-> Include ONLY the parts of the solution that are clear, unambiguous, and have a single best approach — steps that hold true regardless of how the topics are resolved. Multi-variant parts belong in their respective `## Topic N` sections below.
->
-> If no topics were identified, this section contains the complete proposal.
+<!-- RULE: Include ONLY the parts of the solution that are clear, unambiguous, and have a single best approach — steps that hold true regardless of how the topics are resolved. Multi-variant parts belong in their respective Topic N sections below.
+If no topics were identified, this section contains the complete proposal. -->
 
 ### Core Architecture
 
@@ -158,7 +157,7 @@ File: `path/to/another.rs`
 
 ### Test Code Diffs
 
-**MANDATORY**: The shared solution MUST include test code diffs for the clear parts.
+<!-- RULE: MANDATORY: The shared solution MUST include test code diffs for the clear parts. -->
 
 - Cover: happy path, error cases, and edge cases
 - Use the project's test layers: inline `#[cfg(test)]` for unit, `tests/integration/` for integration, `tests/e2e/` for end-to-end
@@ -178,9 +177,8 @@ File: `path/to/test_file.rs`
 
 ## Topic 1: [Topic Name]
 
-> **Type**: Ambiguity / Alternative
->
-> [Brief description of what is ambiguous or why multiple approaches exist, and why it matters for implementation]
+<!-- RULE: Type: Ambiguity / Alternative
+Brief description of what is ambiguous or why multiple approaches exist, and why it matters for implementation -->
 
 ### Variant 1A: [Descriptive Label]
 
