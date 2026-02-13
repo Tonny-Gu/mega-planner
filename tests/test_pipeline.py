@@ -16,6 +16,7 @@ from mega_planner import (
     STAGE_PERMISSION_MODE,
     main,
     run_mega_pipeline,
+    run_resolve_pipeline,
     extract_feature_name,
     _resolve_commit_hash,
     _append_plan_footer,
@@ -82,7 +83,7 @@ def stub_runner() -> Callable:
             content = "# Proposal Reducer\n\nSimplified both proposals."
         elif "code-reducer" in str(output_path):
             content = "# Code Reducer\n\nCode footprint analysis."
-        elif "consensus" in str(output_path):
+        elif "synthesizer" in str(output_path):
             content = "# Implementation Plan: Test Feature\n\nBalanced plan."
         else:
             content = f"# Stage Output\n\nOutput for {output_path.name}"
@@ -119,38 +120,91 @@ class TestMegaPipelineStages:
         expected = {
             "understander", "bold", "paranoia",
             "critique", "proposal-reducer", "code-reducer",
-            "consensus",
+            "synthesizer",
         }
         assert set(results.keys()) == expected
 
-    def test_skip_consensus(self, tmp_output_dir: Path, stub_runner: Callable):
-        """skip_consensus=True returns 6 stages without consensus."""
+    def test_continue_mode_skips_existing(self, tmp_output_dir: Path, stub_runner: Callable):
+        """continue_mode=True skips stages with existing non-empty output."""
+        # Pre-populate some outputs
+        for stage in ["understander", "bold", "paranoia"]:
+            (tmp_output_dir / f"test-{stage}-output.md").write_text(f"# Existing {stage}")
+
         results = run_mega_pipeline(
             "Test feature description",
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
-            skip_consensus=True,
+            continue_mode=True,
         )
-        assert "consensus" not in results
-        assert len(results) == 6
+        expected = {
+            "understander", "bold", "paranoia",
+            "critique", "proposal-reducer", "code-reducer",
+            "synthesizer",
+        }
+        assert set(results.keys()) == expected
+        # Skipped stages should have dummy process (no real args)
+        assert results["understander"].process.args == []
+        assert results["bold"].process.args == []
+        assert results["paranoia"].process.args == []
+        # Non-skipped stages should have real process (stub args)
+        assert results["critique"].process.args != []
+        assert results["synthesizer"].process.args != []
+
+    def test_continue_mode_all_cached(self, tmp_output_dir: Path, stub_runner: Callable):
+        """continue_mode=True with all outputs cached runs nothing."""
+        all_stages = [
+            "understander", "bold", "paranoia",
+            "critique", "proposal-reducer", "code-reducer", "synthesizer",
+        ]
+        for stage in all_stages:
+            (tmp_output_dir / f"test-{stage}-output.md").write_text(f"# Existing {stage}")
+
+        results = run_mega_pipeline(
+            "Test feature description",
+            output_dir=tmp_output_dir,
+            runner=stub_runner,
+            prefix="test",
+            continue_mode=True,
+        )
+        assert set(results.keys()) == set(all_stages)
+        assert len(stub_runner.invocations) == 0
+
+    def test_continue_mode_empty_file_not_skipped(self, tmp_output_dir: Path, stub_runner: Callable):
+        """continue_mode=True does not skip stages with empty output files."""
+        (tmp_output_dir / "test-understander-output.md").write_text("")
+
+        results = run_mega_pipeline(
+            "Test feature description",
+            output_dir=tmp_output_dir,
+            runner=stub_runner,
+            prefix="test",
+            continue_mode=True,
+        )
+        # Understander had empty file, so it should have been re-run
+        assert results["understander"].process.args != []
 
     def test_resolve_mode_skips_debate(self, tmp_output_dir: Path, stub_runner: Callable):
-        """Resolve mode uses existing report files, skips debate stages."""
+        """Resolve pipeline uses existing report files, skips debate stages."""
         report_paths = {}
         for stage in ["bold", "paranoia", "critique", "proposal-reducer", "code-reducer"]:
             p = tmp_output_dir / f"test-{stage}-output.md"
             p.write_text(f"existing {stage} output")
             report_paths[stage] = p
 
-        results = run_mega_pipeline(
+        synthesizer_path = tmp_output_dir / "test-synthesizer-output.md"
+        synthesizer_path.write_text("# Previous Plan\n\nExisting plan content.")
+
+        results = run_resolve_pipeline(
             "Test feature description",
+            "1B,2A",
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
             report_paths=report_paths,
+            synthesizer_path=synthesizer_path,
         )
-        assert "consensus" in results
+        assert "resolver" in results
         assert "understander" not in results
 
     def test_output_artifacts_created(self, tmp_output_dir: Path, stub_runner: Callable):
@@ -160,7 +214,6 @@ class TestMegaPipelineStages:
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
-            skip_consensus=True,
         )
         for stage, result in results.items():
             assert result.output_path.exists(), f"Missing output for {stage}"
@@ -196,7 +249,6 @@ class TestMegaPipelineExecutionOrder:
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
-            skip_consensus=True,
         )
 
         invocations = stub_runner.invocations
@@ -240,7 +292,6 @@ class TestMegaPipelineExecutionOrder:
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
-            skip_consensus=True,
         )
 
         assert recorded.get("parallel_calls") is not None
@@ -265,7 +316,6 @@ class TestMegaPipelinePromptRendering:
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
-            skip_consensus=True,
         )
 
         understander_input = results["understander"].input_path.read_text()
@@ -278,7 +328,6 @@ class TestMegaPipelinePromptRendering:
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
-            skip_consensus=True,
         )
 
         critique_input = results["critique"].input_path.read_text()
@@ -383,7 +432,7 @@ class TestExtractPlanTitle:
         result = _extract_plan_title(plan_file)
         assert result == "My Feature"
 
-    def test_extracts_consensus_plan_title(self, tmp_path: Path):
+    def test_extracts_plan_title_with_consensus_prefix(self, tmp_path: Path):
         plan_file = tmp_path / "plan.md"
         plan_file.write_text("# Consensus Plan: Another Feature\n\nContent")
         result = _extract_plan_title(plan_file)
@@ -425,19 +474,21 @@ class TestCLIArgumentParsing:
         assert result != 0
 
     def test_resolve_short_flag(self, tmp_output_dir, stub_runner, monkeypatch):
-        """-r is shorthand for --resolve."""
+        """-r is shorthand for --resolve and calls run_resolve_pipeline."""
         captured = {}
 
-        def fake_pipeline(desc, **kw):
+        def fake_resolve(desc, selections, **kw):
             captured["desc"] = desc
+            captured["selections"] = selections
             return {}
 
-        monkeypatch.setattr("mega_planner.run_mega_pipeline", fake_pipeline)
+        monkeypatch.setattr("mega_planner.run_resolve_pipeline", fake_resolve)
         monkeypatch.setattr("mega_planner.gh_utils.issue_body", lambda n: "issue body")
         for stage in ["bold", "paranoia", "critique", "proposal-reducer", "code-reducer"]:
             (tmp_output_dir / f"issue-42-{stage}-output.md").write_text("stub")
         result = main(["-r", "42", "1B,2A", "--output-dir", str(tmp_output_dir)])
         assert result == 0
+        assert captured["selections"] == "1B,2A"
 
     def test_local_flag_skips_issue_creation(self, tmp_output_dir, stub_runner, monkeypatch):
         """--local prevents GitHub issue creation."""
