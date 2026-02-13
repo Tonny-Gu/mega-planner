@@ -432,7 +432,8 @@ class TestExtractPlanTitle:
         result = _extract_plan_title(plan_file)
         assert result == "My Feature"
 
-    def test_extracts_plan_title_with_consensus_prefix(self, tmp_path: Path):
+    def test_extracts_plan_title_with_legacy_consensus_prefix(self, tmp_path: Path):
+        """Backward compat: old outputs may use '# Consensus Plan:'."""
         plan_file = tmp_path / "plan.md"
         plan_file.write_text("# Consensus Plan: Another Feature\n\nContent")
         result = _extract_plan_title(plan_file)

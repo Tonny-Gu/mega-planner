@@ -407,7 +407,7 @@ def run_resolve_pipeline(
         "Feature Name": feature_name,
         "Feature Request": feature_desc,
         "User Selections": selections,
-        "Previous Consensus Plan": prev_plan,
+        "Previous Synthesized Plan": prev_plan,
         "Combined Debate Report": debate_report,
     })
 
@@ -429,7 +429,7 @@ def run_resolve_pipeline(
 # Plan Utilities
 # ============================================================
 
-_PLAN_HEADER_RE = re.compile(r"^#\s*(Implementation|Consensus) Plan:\s*(.+)$")
+_PLAN_HEADER_RE = re.compile(r"^#\s*(Implementation|Consensus|Synthesized) Plan:\s*(.+)$")
 _PLAN_FOOTER_RE = re.compile(r"^Plan based on commit (?:[0-9a-f]+|unknown)$")
 
 

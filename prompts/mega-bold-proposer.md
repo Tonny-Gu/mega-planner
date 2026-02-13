@@ -37,7 +37,7 @@ Both cases use the same `## Topic N` / `### Variant` structure in the output.
 - Put all parts where there is ONE clear, uncontested approach into the **Proposed Solution** section
 - For each point with multiple valid paths (ambiguity or alternative), create a dedicated **Topic N** section with variants
 
-This mirrors the synthesizer's consensus/disagreement pattern: clear parts get shared implementation steps, contested parts get per-variant options — avoiding redundant duplication.
+This mirrors the synthesizer's pattern: clear parts become synthesized steps, contested parts become disagreement sections with per-variant options — avoiding redundant duplication.
 
 **Variant limits per topic**: **2–4 variants** maximum. Select the most distinct and impactful options.
 

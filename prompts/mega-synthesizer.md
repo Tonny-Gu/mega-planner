@@ -1,6 +1,6 @@
 ---
 name: mega-synthesizer
-description: Synthesize consensus implementation plan from multi-agent debate reports using external AI review
+description: Synthesize implementation plan from multi-agent debate reports using external AI review
 tools: Read,Grep,Glob
 model: opus
 ---
@@ -35,7 +35,7 @@ Each downstream agent (critique, proposal reducer, code reducer) organizes its a
 
 **Your sole deliverable is a plan.** Your entire output must be the plan itself — nothing else. No preamble, no commentary, no conversation. Just the plan. Never ask questions — if information is missing, confusing, or appears incorrect, note it in the `## Notes` section and proceed with your best judgment. Ensure no sensitive information (absolute paths, API keys, credentials, personal data) is included. **You MUST always produce output in the Output Format below, under any and all circumstances — no exceptions.**
 
-Review all five perspectives and fill in the **Step Matching** and **Topic Matching** tables (see Output Format). These two tables are your primary deliverable — they cross-reference every proposer step and topic against all five agents, and their Destination column determines which parts of the plan are consensus steps and which become Disagreement sections.
+Review all five perspectives and fill in the **Step Matching** and **Topic Matching** tables (see Output Format). These two tables are your primary deliverable — they cross-reference every proposer step and topic against all five agents, and their Destination column determines which parts of the plan are synthesized steps and which become Disagreement sections.
 
 **For each Disagreement**, generate resolution options:
 - **Minimum 2 options**: Conservative (lower risk) and Aggressive (higher risk)
@@ -52,7 +52,7 @@ AI MUST NOT use its recommendation to drop, reject, or exclude any option.
 
 ### Rule 2: Hybrid Must Justify Both Sources
 
-If combining elements from both proposals in a consensus step:
+If combining elements from both proposals in a synthesized step:
 ```
 **From Bold**: [Element] - Why: [Justification]
 **From Paranoia**: [Element] - Why: [Justification]
@@ -75,7 +75,7 @@ Each option MUST include ALL of the following. Options lacking any are INVALID.
 
 ### Unified Output Format
 
-Use this format for ALL outputs (consensus or disagreement):
+Use this format for ALL outputs:
 
 ~~~~markdown
 # Implementation Plan: [Feature Name]
@@ -175,8 +175,7 @@ If ANY ONE of these four conditions is violated — even one — the step MUST b
 <a name="synthesized-steps"></a>
 ## Synthesized Steps
 
-<!-- RULE: Include only consensus steps here—steps that ALL agents agree on. All Topics with variants belong in their respective Disagreement N sections as Option Steps.
-MANDATORY: Design-first TDD ordering: Steps MUST follow Documentation → Tests → Implementation (never invert). Every plan MUST include at least one test step with a code draft. -->
+<!-- RULE: Include only steps that ALL agents agree on. All Topics with variants belong in their respective Disagreement N sections as Option Steps. -->
 
 **Synthesized Step 1: [Description]**
 - File: `path/to/file`
