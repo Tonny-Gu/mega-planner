@@ -1,6 +1,6 @@
 """Tests for mega-planner pipeline orchestration.
 
-Verifies 7-stage mega-planner pipeline with a stub runner (no actual LLM calls).
+Verifies 6-stage mega-planner pipeline with a stub runner (no actual LLM calls).
 """
 
 import subprocess
@@ -71,9 +71,7 @@ def stub_runner() -> Callable:
         })
 
         output_path = Path(output_file)
-        if "understander" in str(output_path):
-            content = "# Understander Output\n\nContext gathered for feature."
-        elif "bold" in str(output_path):
+        if "bold" in str(output_path):
             content = "# Bold Proposal\n\nInnovative approach with code diff drafts."
         elif "paranoia" in str(output_path):
             content = "# Paranoia Proposal\n\nDestructive refactoring approach."
@@ -107,10 +105,10 @@ def stub_runner() -> Callable:
 
 
 class TestMegaPipelineStages:
-    """Test 7-stage pipeline produces all expected outputs."""
+    """Test 6-stage pipeline produces all expected outputs."""
 
-    def test_returns_all_seven_stages(self, tmp_output_dir: Path, stub_runner: Callable):
-        """Pipeline returns results for all 7 stages."""
+    def test_returns_all_six_stages(self, tmp_output_dir: Path, stub_runner: Callable):
+        """Pipeline returns results for all 6 stages."""
         results = run_mega_pipeline(
             "Test feature description",
             output_dir=tmp_output_dir,
@@ -118,7 +116,7 @@ class TestMegaPipelineStages:
             prefix="test",
         )
         expected = {
-            "understander", "bold", "paranoia",
+            "bold", "paranoia",
             "critique", "proposal-reducer", "code-reducer",
             "synthesizer",
         }
@@ -127,7 +125,7 @@ class TestMegaPipelineStages:
     def test_continue_mode_skips_existing(self, tmp_output_dir: Path, stub_runner: Callable):
         """continue_mode=True skips stages with existing non-empty output."""
         # Pre-populate some outputs
-        for stage in ["understander", "bold", "paranoia"]:
+        for stage in ["bold", "paranoia"]:
             (tmp_output_dir / f"test-{stage}-output.md").write_text(f"# Existing {stage}")
 
         results = run_mega_pipeline(
@@ -138,13 +136,12 @@ class TestMegaPipelineStages:
             continue_mode=True,
         )
         expected = {
-            "understander", "bold", "paranoia",
+            "bold", "paranoia",
             "critique", "proposal-reducer", "code-reducer",
             "synthesizer",
         }
         assert set(results.keys()) == expected
         # Skipped stages should have dummy process (no real args)
-        assert results["understander"].process.args == []
         assert results["bold"].process.args == []
         assert results["paranoia"].process.args == []
         # Non-skipped stages should have real process (stub args)
@@ -154,7 +151,7 @@ class TestMegaPipelineStages:
     def test_continue_mode_all_cached(self, tmp_output_dir: Path, stub_runner: Callable):
         """continue_mode=True with all outputs cached runs nothing."""
         all_stages = [
-            "understander", "bold", "paranoia",
+            "bold", "paranoia",
             "critique", "proposal-reducer", "code-reducer", "synthesizer",
         ]
         for stage in all_stages:
@@ -172,7 +169,7 @@ class TestMegaPipelineStages:
 
     def test_continue_mode_empty_file_not_skipped(self, tmp_output_dir: Path, stub_runner: Callable):
         """continue_mode=True does not skip stages with empty output files."""
-        (tmp_output_dir / "test-understander-output.md").write_text("")
+        (tmp_output_dir / "test-bold-output.md").write_text("")
 
         results = run_mega_pipeline(
             "Test feature description",
@@ -181,8 +178,8 @@ class TestMegaPipelineStages:
             prefix="test",
             continue_mode=True,
         )
-        # Understander had empty file, so it should have been re-run
-        assert results["understander"].process.args != []
+        # Bold had empty file, so it should have been re-run
+        assert results["bold"].process.args != []
 
     def test_resolve_mode_skips_debate(self, tmp_output_dir: Path, stub_runner: Callable):
         """Resolve pipeline uses existing report files, skips debate stages."""
@@ -205,7 +202,6 @@ class TestMegaPipelineStages:
             synthesizer_path=synthesizer_path,
         )
         assert "resolver" in results
-        assert "understander" not in results
 
     def test_output_artifacts_created(self, tmp_output_dir: Path, stub_runner: Callable):
         """Pipeline creates output files for each stage."""
@@ -219,19 +215,17 @@ class TestMegaPipelineStages:
             assert result.output_path.exists(), f"Missing output for {stage}"
             assert result.output_path.stat().st_size > 0
 
-    def test_debate_report_saved(self, tmp_output_dir: Path, stub_runner: Callable):
-        """Pipeline saves combined debate report."""
-        run_mega_pipeline(
+    def test_synthesizer_input_has_file_paths(self, tmp_output_dir: Path, stub_runner: Callable):
+        """Synthesizer input references output file paths instead of inline content."""
+        results = run_mega_pipeline(
             "Test feature description",
             output_dir=tmp_output_dir,
             runner=stub_runner,
             prefix="test",
         )
-        debate_file = tmp_output_dir / "test-debate.md"
-        assert debate_file.exists()
-        content = debate_file.read_text()
-        assert "Bold Proposer" in content
-        assert "Paranoia Proposer" in content
+        synthesizer_input = results["synthesizer"].input_path.read_text()
+        for stage in ["bold", "paranoia", "critique", "proposal-reducer", "code-reducer"]:
+            assert str(results[stage].output_path) in synthesizer_input
 
 
 # ============================================================
@@ -241,34 +235,6 @@ class TestMegaPipelineStages:
 
 class TestMegaPipelineExecutionOrder:
     """Tests for correct stage execution order."""
-
-    def test_understander_runs_before_proposers(self, tmp_output_dir: Path, stub_runner: Callable):
-        """Understander always runs before bold and paranoia."""
-        run_mega_pipeline(
-            "Test feature",
-            output_dir=tmp_output_dir,
-            runner=stub_runner,
-            prefix="test",
-        )
-
-        invocations = stub_runner.invocations
-        understander_idx = None
-        bold_idx = None
-        paranoia_idx = None
-
-        for idx, inv in enumerate(invocations):
-            if "understander" in inv["output_file"] and understander_idx is None:
-                understander_idx = idx
-            if "bold" in inv["output_file"] and bold_idx is None:
-                bold_idx = idx
-            if "paranoia" in inv["output_file"] and paranoia_idx is None:
-                paranoia_idx = idx
-
-        assert understander_idx is not None
-        assert bold_idx is not None
-        assert paranoia_idx is not None
-        assert understander_idx < bold_idx
-        assert understander_idx < paranoia_idx
 
     def test_bold_paranoia_parallel(self, tmp_output_dir: Path, stub_runner: Callable, monkeypatch):
         """Bold and paranoia are dispatched through the parallel runner."""
@@ -318,8 +284,8 @@ class TestMegaPipelinePromptRendering:
             prefix="test",
         )
 
-        understander_input = results["understander"].input_path.read_text()
-        assert feature_desc in understander_input
+        bold_input = results["bold"].input_path.read_text()
+        assert feature_desc in bold_input
 
     def test_dual_input_stages_have_both_proposals(self, tmp_output_dir: Path, stub_runner: Callable):
         """Critique and reducer stages receive both bold and paranoia outputs."""

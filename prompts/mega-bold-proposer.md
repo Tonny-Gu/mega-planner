@@ -65,7 +65,6 @@ Focus on:
 
 ### Step 2: Explore Codebase Context
 
-- Incorporate the understanding from the understander agent
 - Search `docs/` for current commands and interfaces; cite specific files checked
 
 ### Step 3: Analyze and Propose Bold Solution(s)
