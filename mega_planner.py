@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mega-planner: 7-stage multi-agent debate pipeline.
+"""Mega-planner: 6-stage multi-agent debate pipeline.
 
 Single-file executable. Prompts are read from the ``prompts/`` directory
 next to this script.
@@ -38,7 +38,6 @@ _MD_HEADING_RE = re.compile(r"^#", re.MULTILINE)
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 AGENT_PROMPTS = {
-    "understander": "mega-understander.md",
     "bold": "mega-bold-proposer.md",
     "paranoia": "mega-paranoia-proposer.md",
     "critique": "mega-proposal-critique.md",
@@ -49,7 +48,6 @@ AGENT_PROMPTS = {
 }
 
 DEFAULT_BACKENDS = {
-    "understander": ("claude", "sonnet"),
     "bold": ("claude", "opus"),
     "paranoia": ("claude", "opus"),
     "critique": ("claude", "opus"),
@@ -60,7 +58,6 @@ DEFAULT_BACKENDS = {
 }
 
 STAGE_TOOLS = {
-    "understander": "Read,Grep,Glob",
     "bold": "Read,Grep,Glob,WebSearch,WebFetch",
     "paranoia": "Read,Grep,Glob,WebSearch,WebFetch",
     "critique": "Read,Grep,Glob,WebSearch,WebFetch",
@@ -113,61 +110,6 @@ def _system_flags(stage: str) -> list[str]:
     return ["--system-prompt-file", _prompt_path(stage)]
 
 
-def _build_debate_report(
-    feature_name: str,
-    bold_output: str,
-    paranoia_output: str,
-    critique_output: str,
-    proposal_reducer_output: str,
-    code_reducer_output: str,
-) -> str:
-    """Build the combined 5-agent debate report."""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-    return f"""# Multi-Agent Debate Report (Mega-Planner): {feature_name}
-
-**Generated**: {timestamp}
-
-This document combines five perspectives from the mega-planner dual-proposer debate system:
-1. **Bold Proposer**: Innovative, SOTA-driven approach
-2. **Paranoia Proposer**: Destructive refactoring approach
-3. **Critique**: Feasibility analysis of both proposals
-4. **Proposal Reducer**: Simplification of both proposals
-5. **Code Reducer**: Code footprint analysis
-
----
-
-## Part 1: Bold Proposer
-
-{bold_output}
-
----
-
-## Part 2: Paranoia Proposer
-
-{paranoia_output}
-
----
-
-## Part 3: Critique
-
-{critique_output}
-
----
-
-## Part 4: Proposal Reducer
-
-{proposal_reducer_output}
-
----
-
-## Part 5: Code Reducer
-
-{code_reducer_output}
-
----
-"""
-
-
 def extract_feature_name(feature_desc: str, max_len: int = 80) -> str:
     """Extract a short feature name from description."""
     first_line = feature_desc.strip().split("\n")[0]
@@ -192,9 +134,9 @@ def run_mega_pipeline(
     output_suffix: str = "-output.md",
     continue_mode: bool = False,
 ) -> dict[str, StageResult]:
-    """Execute the 7-stage mega-planner pipeline.
+    """Execute the 6-stage mega-planner pipeline.
 
-    Runs all stages: understander → bold+paranoia → critique+reducers → synthesizer.
+    Runs all stages: bold+paranoia → critique+reducers → synthesizer.
 
     If continue_mode is True, skip any stage whose output file
     already exists and is non-empty.
@@ -244,29 +186,13 @@ def run_mega_pipeline(
             process=subprocess.CompletedProcess(args=[], returncode=0),
         )
 
-    # --- Tier 1: Understander ---
-    if _should_skip("understander"):
-        results["understander"] = _skip_result("understander")
-    else:
-        _log(f"Stage 1/7: Running understander ({_backend_label('understander')})")
-        results["understander"] = session.run_prompt(
-            "understander",
-            _build_user_prompt({"Feature Request": feature_desc}),
-            stage_backends["understander"],
-            tools=STAGE_TOOLS.get("understander"),
-            permission_mode=STAGE_PERMISSION_MODE.get("understander"),
-            extra_flags=_system_flags("understander"),
-        )
-    understander_output = _strip_preamble(results["understander"].text(), "understander")
-
-    # --- Tier 2: Bold + Paranoia in parallel ---
+    # --- Tier 1: Bold + Paranoia in parallel ---
     _log(
-        f"Stage 2-3/7: Running bold + paranoia in parallel "
+        f"Stage 1-2/6: Running bold + paranoia in parallel "
         f"({_backend_label('bold')}, {_backend_label('paranoia')})"
     )
     proposer_user = _build_user_prompt({
         "Feature Request": feature_desc,
-        "Understander Context": understander_output,
     })
 
     tier2_to_run = []
@@ -282,19 +208,17 @@ def run_mega_pipeline(
             )
     if tier2_to_run:
         results.update(session.run_parallel(tier2_to_run, max_workers=len(tier2_to_run)))
-    bold_output = _strip_preamble(results["bold"].text(), "bold")
-    paranoia_output = _strip_preamble(results["paranoia"].text(), "paranoia")
 
-    # --- Tier 3: Critique + Proposal Reducer + Code Reducer in parallel ---
+    # --- Tier 2: Critique + Proposal Reducer + Code Reducer in parallel ---
     _log(
-        f"Stage 4-6/7: Running critique + reducers in parallel "
+        f"Stage 3-5/6: Running critique + reducers in parallel "
         f"({_backend_label('critique')}, {_backend_label('proposal-reducer')}, "
         f"{_backend_label('code-reducer')})"
     )
     dual_user = _build_user_prompt({
         "Feature Request": feature_desc,
-        "Bold Proposal": bold_output,
-        "Paranoia Proposal": paranoia_output,
+        "Bold Proposal (read this file)": str(results["bold"].output_path),
+        "Paranoia Proposal (read this file)": str(results["paranoia"].output_path),
     })
 
     tier3_to_run = []
@@ -310,32 +234,24 @@ def run_mega_pipeline(
             )
     if tier3_to_run:
         results.update(session.run_parallel(tier3_to_run, max_workers=len(tier3_to_run)))
-    critique_output = _strip_preamble(results["critique"].text(), "critique")
-    proposal_reducer_output = _strip_preamble(results["proposal-reducer"].text(), "proposal-reducer")
-    code_reducer_output = _strip_preamble(results["code-reducer"].text(), "code-reducer")
 
-    # --- Tier 4: Synthesizer ---
+    # --- Tier 3: Synthesizer ---
     if _should_skip("synthesizer"):
         results["synthesizer"] = _skip_result("synthesizer")
     else:
         feature_name = extract_feature_name(feature_desc)
-        debate_report = _build_debate_report(
-            feature_name,
-            bold_output, paranoia_output,
-            critique_output, proposal_reducer_output, code_reducer_output,
-        )
-
-        # Save debate report
-        debate_file = output_path / f"{prefix}-debate.md"
-        debate_file.write_text(debate_report)
 
         synthesizer_user = _build_user_prompt({
             "Feature Name": feature_name,
             "Feature Request": feature_desc,
-            "Combined Report": debate_report,
+            "Bold Proposal (read this file)": str(results["bold"].output_path),
+            "Paranoia Proposal (read this file)": str(results["paranoia"].output_path),
+            "Critique (read this file)": str(results["critique"].output_path),
+            "Proposal Reducer (read this file)": str(results["proposal-reducer"].output_path),
+            "Code Reducer (read this file)": str(results["code-reducer"].output_path),
         })
 
-        _log(f"Stage 7/7: Running synthesizer ({_backend_label('synthesizer')})")
+        _log(f"Stage 6/6: Running synthesizer ({_backend_label('synthesizer')})")
         results["synthesizer"] = session.run_prompt(
             "synthesizer",
             synthesizer_user,
@@ -388,27 +304,17 @@ def run_resolve_pipeline(
         session._log(msg)
 
     feature_name = extract_feature_name(feature_desc)
-    debate_report = _build_debate_report(
-        feature_name,
-        report_paths["bold"].read_text(),
-        report_paths["paranoia"].read_text(),
-        report_paths["critique"].read_text(),
-        report_paths["proposal-reducer"].read_text(),
-        report_paths["code-reducer"].read_text(),
-    )
-
-    # Save debate report
-    debate_file = output_path / f"{prefix}-debate.md"
-    debate_file.write_text(debate_report)
-
-    prev_plan = synthesizer_path.read_text()
 
     resolver_user = _build_user_prompt({
         "Feature Name": feature_name,
         "Feature Request": feature_desc,
         "User Selections": selections,
-        "Previous Synthesized Plan": prev_plan,
-        "Combined Debate Report": debate_report,
+        "Previous Synthesized Plan (read this file)": str(synthesizer_path),
+        "Bold Proposal (read this file)": str(report_paths["bold"]),
+        "Paranoia Proposal (read this file)": str(report_paths["paranoia"]),
+        "Critique (read this file)": str(report_paths["critique"]),
+        "Proposal Reducer (read this file)": str(report_paths["proposal-reducer"]),
+        "Code Reducer (read this file)": str(report_paths["code-reducer"]),
     })
 
     p, m = stage_backends["resolver"]
@@ -527,7 +433,7 @@ def _apply_issue_tag(plan_title: str, issue_number: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point. Positional args serve as feature desc or selections."""
-    parser = argparse.ArgumentParser(description="Mega-planner 7-stage pipeline")
+    parser = argparse.ArgumentParser(description="Mega-planner 6-stage pipeline")
     parser.add_argument("words", nargs="*", default=[], help="Feature description or selections")
     parser.add_argument("--override", default="", metavar="ISSUE", help="Plan for existing issue using positional args as description")
     parser.add_argument("-r", "--resolve", default="", metavar="ISSUE", help="Resolve disagreements in issue")
@@ -563,7 +469,9 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
             report_paths[stage] = p
 
-        synthesizer_path = output_dir / f"{prefix}-synthesizer-output.md"
+        # Prefer cleaned plan file; fall back to raw synthesizer output
+        plan_path = output_dir / f"{prefix}-plan.md"
+        synthesizer_path = plan_path if plan_path.exists() else output_dir / f"{prefix}-synthesizer-output.md"
 
         feature_desc = gh_utils.issue_body(issue_number)
         feature_desc = _strip_plan_footer(feature_desc)
@@ -627,7 +535,7 @@ def main(argv: list[str] | None = None) -> int:
             synthesizer_path=synthesizer_path,
         )
     else:
-        _log("Starting mega-planner 7-stage debate pipeline...")
+        _log("Starting mega-planner 6-stage debate pipeline...")
         results = run_mega_pipeline(
             feature_desc,
             output_dir=output_dir,
@@ -640,29 +548,32 @@ def main(argv: list[str] | None = None) -> int:
         stage_name = "resolver" if "resolver" in results else "synthesizer"
         raw = plan_result.output_path.read_text()
         cleaned = _strip_preamble(raw, stage_name)
-        if cleaned != raw:
-            plan_result.output_path.write_text(cleaned)
+
+        # Write cleaned plan to a separate file; raw agent output is preserved
+        plan_path = output_dir / f"{prefix}-plan.md"
+        plan_path.write_text(cleaned)
 
         commit_hash = _resolve_commit_hash()
-        _append_plan_footer(plan_result.output_path, commit_hash)
+        _append_plan_footer(plan_path, commit_hash)
 
         if issue_mode and issue_number:
             _log(f"Publishing plan to issue #{issue_number}...")
-            plan_title = _extract_plan_title(plan_result.output_path)
+            plan_title = _extract_plan_title(plan_path)
             if not plan_title:
                 plan_title = _shorten_feature_desc(feature_desc, max_len=50)
             plan_title = _apply_issue_tag(plan_title, issue_number)
             gh_utils.issue_edit(
                 issue_number,
                 title=f"[plan] {plan_title}",
-                body_file=plan_result.output_path,
+                body_file=plan_path,
             )
             gh_utils.label_add(issue_number, ["agentize:plan"])
             if issue_url:
                 _log(f"See the full plan at: {issue_url}")
 
-        _log(f"See the full plan locally at: {plan_result.output_path}")
-        print(str(plan_result.output_path))
+        _log(f"Raw agent output: {plan_result.output_path}")
+        _log(f"Cleaned plan: {plan_path}")
+        print(str(plan_path))
 
     _log("Pipeline complete!")
     return 0
